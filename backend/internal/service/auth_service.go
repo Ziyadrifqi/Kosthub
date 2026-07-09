@@ -26,6 +26,13 @@ func NewAuthService(userRepo *repository.UserRepository, cfg *config.Config) *Au
 	return &AuthService{userRepo: userRepo, cfg: cfg}
 }
 
+func roleNameOrDefault(user *models.User) string {
+	if user.Role != nil {
+		return user.Role.Name
+	}
+	return "customer"
+}
+
 type RegisterInput struct {
 	Name     string
 	Email    string
@@ -93,6 +100,7 @@ func (s *AuthService) generateToken(user *models.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user.ID.String(),
 		"email":   user.Email,
+		"role":    roleNameOrDefault(user),
 		"exp":     time.Now().Add(time.Duration(expireHours) * time.Hour).Unix(),
 		"iat":     time.Now().Unix(),
 	}

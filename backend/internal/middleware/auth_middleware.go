@@ -44,6 +44,18 @@ func AuthRequired(jwtSecret string) gin.HandlerFunc {
 
 		c.Set("user_id", claims["user_id"])
 		c.Set("email", claims["email"])
+		c.Set("role", claims["role"])
+		c.Next()
+	}
+}
+
+func AdminOnly() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		role, exists := c.Get("role")
+		if !exists || role != "admin" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "admin access required"})
+			return
+		}
 		c.Next()
 	}
 }

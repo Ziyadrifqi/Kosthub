@@ -4,6 +4,7 @@ backend/tmp/
 backend/*.exe
 backend/*.log
 backend/vendor/
+backend/uploads/
 
 # ==== Frontend (Node/React/Vite) ====
 frontend/node_modules/

@@ -8,8 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler, bookingHandler *handler.BookingHandler) *gin.Engine {
+func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler, bookingHandler *handler.BookingHandler, paymentHandler *handler.PaymentHandler) *gin.Engine {
 	r := gin.Default()
+
+	// izinkan akses file upload bukti transfer
+	r.Static("/uploads", "./uploads")
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
@@ -52,6 +55,14 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 				bookings.POST("", bookingHandler.CreateBooking)
 				bookings.GET("/my", bookingHandler.GetMyBookings)
 				bookings.GET("/:id", bookingHandler.GetBooking)
+			}
+			protected.POST("/payments/upload-proof", paymentHandler.UploadProof)
+
+			admin := protected.Group("/admin")
+			admin.Use(middleware.AdminOnly())
+			{
+				admin.GET("/payments/pending", paymentHandler.GetPendingPayments)
+				admin.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
 			}
 		}
 	}

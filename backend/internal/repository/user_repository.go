@@ -20,7 +20,7 @@ func (r *UserRepository) Create(user *models.User) error {
 
 func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 	var user models.User
-	err := r.db.Where("email = ?", email).First(&user).Error
+	err := r.db.Preload("Role").Where("email = ?", email).First(&user).Error
 	if err != nil {
 		return nil, err
 	}
