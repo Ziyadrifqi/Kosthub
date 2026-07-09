@@ -27,7 +27,12 @@ func main() {
 	roomService := service.NewRoomService(roomRepo)
 	roomHandler := handler.NewRoomHandler(roomService)
 
-	r := router.Setup(cfg, authHandler, roomHandler)
+	// Bookings
+	bookingRepo := repository.NewBookingRepository(db)
+	bookingService := service.NewBookingService(bookingRepo, roomRepo)
+	bookingHandler := handler.NewBookingHandler(bookingService)
+
+	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)
 	if err := r.Run(":" + cfg.AppPort); err != nil {

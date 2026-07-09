@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler) *gin.Engine {
+func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler, bookingHandler *handler.BookingHandler) *gin.Engine {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
@@ -30,7 +30,6 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 			auth.POST("/login", authHandler.Login)
 		}
 
-		// publik: siapa saja bisa lihat listing kamar (termasuk sebelum login)
 		rooms := api.Group("/rooms")
 		{
 			rooms.GET("", roomHandler.ListRooms)
@@ -47,6 +46,13 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 				})
 			})
 			protected.POST("/rooms", roomHandler.CreateRoom)
+
+			bookings := protected.Group("/bookings")
+			{
+				bookings.POST("", bookingHandler.CreateBooking)
+				bookings.GET("/my", bookingHandler.GetMyBookings)
+				bookings.GET("/:id", bookingHandler.GetBooking)
+			}
 		}
 	}
 
