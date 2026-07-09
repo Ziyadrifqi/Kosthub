@@ -1,0 +1,27 @@
+# ==== Backend (Go) ====
+backend/.env
+backend/tmp/
+backend/*.exe
+backend/*.log
+backend/vendor/
+
+# ==== Frontend (Node/React/Vite) ====
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/*.log
+frontend/.vite/
+
+# ==== Docker ====
+docker-compose.override.yml
+
+# ==== OS/Editor ====
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# ==== Database dump lokal (kalau ada) ====
+*.sql.bak
+pgdata/

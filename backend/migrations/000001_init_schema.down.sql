@@ -1,0 +1,35 @@
+DROP TABLE IF EXISTS ai_chat_history;
+
+DROP TABLE IF EXISTS notifications;
+
+DROP TABLE IF EXISTS maintenance_tickets;
+
+DROP TABLE IF EXISTS chat_messages;
+
+DROP TABLE IF EXISTS chat_rooms;
+
+DROP TABLE IF EXISTS favorites;
+
+DROP TABLE IF EXISTS reviews;
+
+DROP TABLE IF EXISTS payments;
+
+DROP TABLE IF EXISTS bookings;
+
+DROP TABLE IF EXISTS room_facilities;
+
+DROP TABLE IF EXISTS facilities;
+
+DROP TABLE IF EXISTS room_images;
+
+DROP TABLE IF EXISTS rooms;
+
+DROP TABLE IF EXISTS room_types;
+
+DROP TABLE IF EXISTS buildings;
+
+DROP TABLE IF EXISTS branches;
+
+DROP TABLE IF EXISTS users;
+
+DROP TABLE IF EXISTS roles;
