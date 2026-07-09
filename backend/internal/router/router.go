@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(cfg *config.Config, authHandler *handler.AuthHandler) *gin.Engine {
+func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler) *gin.Engine {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
@@ -30,7 +30,13 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler) *gin.Engine {
 			auth.POST("/login", authHandler.Login)
 		}
 
-		// contoh grup endpoint yang butuh login, dipakai nanti untuk fitur lain
+		// publik: siapa saja bisa lihat listing kamar (termasuk sebelum login)
+		rooms := api.Group("/rooms")
+		{
+			rooms.GET("", roomHandler.ListRooms)
+			rooms.GET("/:id", roomHandler.GetRoom)
+		}
+
 		protected := api.Group("/")
 		protected.Use(middleware.AuthRequired(cfg.JWTSecret))
 		{
@@ -40,6 +46,7 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler) *gin.Engine {
 					"email":   c.MustGet("email"),
 				})
 			})
+			protected.POST("/rooms", roomHandler.CreateRoom)
 		}
 	}
 

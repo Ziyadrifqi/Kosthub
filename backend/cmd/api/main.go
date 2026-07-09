@@ -17,12 +17,17 @@ func main() {
 	db := database.ConnectPostgres(cfg)
 	_ = database.ConnectRedis(cfg)
 
-	// wiring dependency: repository -> service -> handler
+	// Auth
 	userRepo := repository.NewUserRepository(db)
 	authService := service.NewAuthService(userRepo, cfg)
 	authHandler := handler.NewAuthHandler(authService)
 
-	r := router.Setup(cfg, authHandler)
+	// Rooms
+	roomRepo := repository.NewRoomRepository(db)
+	roomService := service.NewRoomService(roomRepo)
+	roomHandler := handler.NewRoomHandler(roomService)
+
+	r := router.Setup(cfg, authHandler, roomHandler)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)
 	if err := r.Run(":" + cfg.AppPort); err != nil {
