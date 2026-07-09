@@ -49,13 +49,25 @@ func AuthRequired(jwtSecret string) gin.HandlerFunc {
 	}
 }
 
-func AdminOnly() gin.HandlerFunc {
+func RoleRequired(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("role")
-		if !exists || role != "admin" {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "admin access required"})
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "access denied"})
 			return
 		}
-		c.Next()
+		roleStr, _ := role.(string)
+		for _, allowed := range allowedRoles {
+			if roleStr == allowed {
+				c.Next()
+				return
+			}
+		}
+		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "access denied"})
 	}
+}
+
+// AdminOnly tetap ada untuk backward compatibility, staff & finance & super_admin dianggap "admin-level"
+func AdminOnly() gin.HandlerFunc {
+	return RoleRequired("staff", "finance", "super_admin")
 }

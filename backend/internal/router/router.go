@@ -64,6 +64,12 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 				admin.GET("/payments/pending", paymentHandler.GetPendingPayments)
 				admin.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
 			}
+
+			owner := protected.Group("/owner")
+			owner.Use(middleware.RoleRequired("owner", "super_admin"))
+			{
+				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
+			}
 		}
 	}
 

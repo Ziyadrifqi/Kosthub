@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/Ziyadrifqi/kosthub/backend/internal/repository"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -69,7 +70,8 @@ func (h *PaymentHandler) GetPendingPayments(c *gin.Context) {
 }
 
 type verifyPaymentRequest struct {
-	Approve bool `json:"approve"`
+	Approve bool   `json:"approve"`
+	Note    string `json:"note"`
 }
 
 // PATCH /api/admin/payments/:id/verify (protected, admin only)
@@ -93,10 +95,34 @@ func (h *PaymentHandler) VerifyPayment(c *gin.Context) {
 		return
 	}
 
-	if err := h.paymentService.VerifyPayment(paymentID, req.Approve, adminID); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to verify payment"})
+	if err := h.paymentService.VerifyPayment(paymentID, req.Approve, adminID, req.Note, c.ClientIP()); err != nil {
+		switch err {
+		case repository.ErrRejectReasonRequired:
+			c.JSON(http.StatusBadRequest, gin.H{"error": "note is required when rejecting a payment"})
+		case repository.ErrPaymentAlreadyProcessed:
+			c.JSON(http.StatusConflict, gin.H{"error": "payment has already been processed"})
+		default:
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to verify payment"})
+		}
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "payment verification updated"})
+	c.JSON(http.StatusOK, gin.H{"message": "payment verification recorded"})
+}
+
+// GET /api/admin/payments/:id/audit-logs — untuk owner/super_admin audit siapa ngapain
+func (h *PaymentHandler) GetAuditLogs(c *gin.Context) {
+	paymentID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid payment id"})
+		return
+	}
+
+	logs, err := h.paymentService.GetAuditLogs(paymentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch audit logs"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"logs": logs})
 }

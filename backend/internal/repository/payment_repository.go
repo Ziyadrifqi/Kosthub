@@ -1,9 +1,16 @@
 package repository
 
 import (
+	"errors"
+
 	"github.com/Ziyadrifqi/kosthub/backend/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+)
+
+var (
+	ErrPaymentAlreadyProcessed = errors.New("payment has already been verified or rejected")
+	ErrRejectReasonRequired    = errors.New("note is required when rejecting a payment")
 )
 
 type PaymentRepository struct {
@@ -67,19 +74,34 @@ func (r *PaymentRepository) FindPending(page, limit int) ([]models.Payment, int6
 	return payments, total, nil
 }
 
-// VerifyTx melakukan verifikasi payment dalam SATU transaction:
-// update status payment -> verified/rejected, dan kalau verified,
-// booking terkait ikut di-update jadi "confirmed"
-func (r *PaymentRepository) VerifyTx(paymentID uuid.UUID, approve bool, adminID uuid.UUID) error {
+// VerifyTx melakukan verifikasi payment dengan proteksi anti-kecurangan:
+// - Lock baris payment (FOR UPDATE) supaya tidak ada dua admin verifikasi bersamaan
+// - Tolak jika payment sudah pernah diproses sebelumnya (tidak bisa dibalik diam-diam)
+// - Wajib ada catatan/alasan kalau reject
+// - Setiap aksi dicatat permanen ke payment_audit_logs (append-only, tidak bisa diedit/dihapus)
+func (r *PaymentRepository) VerifyTx(paymentID uuid.UUID, approve bool, adminID uuid.UUID, note, ipAddress string) error {
+	if !approve && note == "" {
+		return ErrRejectReasonRequired
+	}
+
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var payment models.Payment
-		if err := tx.Where("id = ?", paymentID).First(&payment).Error; err != nil {
+
+		if err := tx.Clauses(clauseForUpdate()).
+			Where("id = ?", paymentID).
+			First(&payment).Error; err != nil {
 			return err
 		}
 
+		if payment.Status != "waiting_verification" {
+			return ErrPaymentAlreadyProcessed
+		}
+
 		newStatus := "rejected"
+		action := "rejected"
 		if approve {
 			newStatus = "verified"
+			action = "verified"
 		}
 
 		if err := tx.Model(&payment).Updates(map[string]interface{}{
@@ -97,6 +119,35 @@ func (r *PaymentRepository) VerifyTx(paymentID uuid.UUID, approve bool, adminID 
 			}
 		}
 
+		var notePtr *string
+		if note != "" {
+			notePtr = &note
+		}
+		var ipPtr *string
+		if ipAddress != "" {
+			ipPtr = &ipAddress
+		}
+
+		log := &models.PaymentAuditLog{
+			PaymentID:   paymentID,
+			Action:      action,
+			PerformedBy: adminID,
+			Note:        notePtr,
+			IPAddress:   ipPtr,
+		}
+		if err := tx.Create(log).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
+}
+
+func (r *PaymentRepository) FindAuditLogsByPaymentID(paymentID uuid.UUID) ([]models.PaymentAuditLog, error) {
+	var logs []models.PaymentAuditLog
+	err := r.db.Preload("Performer").
+		Where("payment_id = ?", paymentID).
+		Order("created_at asc").
+		Find(&logs).Error
+	return logs, err
 }

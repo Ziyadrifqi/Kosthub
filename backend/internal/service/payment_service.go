@@ -45,6 +45,10 @@ func (s *PaymentService) GetPendingPayments(page, limit int) ([]models.Payment, 
 	return s.paymentRepo.FindPending(page, limit)
 }
 
-func (s *PaymentService) VerifyPayment(paymentID uuid.UUID, approve bool, adminID uuid.UUID) error {
-	return s.paymentRepo.VerifyTx(paymentID, approve, adminID)
+func (s *PaymentService) VerifyPayment(paymentID uuid.UUID, approve bool, adminID uuid.UUID, note, ipAddress string) error {
+	return s.paymentRepo.VerifyTx(paymentID, approve, adminID, note, ipAddress)
+}
+
+func (s *PaymentService) GetAuditLogs(paymentID uuid.UUID) ([]models.PaymentAuditLog, error) {
+	return s.paymentRepo.FindAuditLogsByPaymentID(paymentID)
 }
