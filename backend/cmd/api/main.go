@@ -38,7 +38,13 @@ func main() {
 	paymentService := service.NewPaymentService(paymentRepo, bookingRepo)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
-	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler)
+	reportService := service.NewReportService(db)
+	reportHandler := handler.NewReportHandler(reportService)
+
+	userMgmtService := service.NewUserManagementService(db)
+	userHandler := handler.NewUserHandler(userMgmtService)
+
+	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler, reportHandler, userHandler)
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)

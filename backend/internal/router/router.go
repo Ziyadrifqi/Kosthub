@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler, bookingHandler *handler.BookingHandler, paymentHandler *handler.PaymentHandler) *gin.Engine {
+func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler, bookingHandler *handler.BookingHandler, paymentHandler *handler.PaymentHandler, reportHandler *handler.ReportHandler, userHandler *handler.UserHandler) *gin.Engine {
 	r := gin.Default()
 
 	// izinkan akses file upload bukti transfer
@@ -70,6 +70,36 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 			{
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
 			}
+		}
+		// STAFF & FINANCE & SUPER_ADMIN — verifikasi payment
+		finance := protected.Group("/admin")
+		finance.Use(middleware.RoleRequired("finance", "super_admin"))
+		{
+			finance.GET("/payments/pending", paymentHandler.GetPendingPayments)
+			finance.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
+		}
+
+		// STAFF & SUPER_ADMIN — kelola kamar
+		staff := protected.Group("/staff")
+		staff.Use(middleware.RoleRequired("staff", "super_admin"))
+		{
+			staff.POST("/rooms", roomHandler.CreateRoom)
+		}
+
+		// OWNER & SUPER_ADMIN — laporan & audit
+		owner := protected.Group("/owner")
+		owner.Use(middleware.RoleRequired("owner", "super_admin"))
+		{
+			owner.GET("/reports/summary", reportHandler.GetSummary)
+			owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
+		}
+
+		// SUPER_ADMIN ONLY — kelola user & role
+		superAdmin := protected.Group("/super-admin")
+		superAdmin.Use(middleware.RoleRequired("super_admin"))
+		{
+			superAdmin.GET("/users", userHandler.ListUsers)
+			superAdmin.PATCH("/users/:id/role", userHandler.UpdateRole)
 		}
 	}
 

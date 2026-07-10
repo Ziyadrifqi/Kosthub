@@ -10,9 +10,18 @@ export function ProtectedRoute() {
 export function AdminRoute() {
   const { token, user } = useAuthStore()
   if (!token) return <Navigate to="/login" replace />
-  const adminRoles = ["staff", "finance", "owner", "super_admin"]
+ const adminRoles = ["staff", "finance", "owner", "super_admin"]
   if (!user?.role || !adminRoles.includes(user.role.name)) {
     return <Navigate to="/" replace />
+  }
+  return <Outlet />
+}
+
+export function RoleRoute({ allowedRoles }: { allowedRoles: string[] }) {
+  const { token, user } = useAuthStore()
+  if (!token) return <Navigate to="/login" replace />
+  if (!user?.role || !allowedRoles.includes(user.role.name)) {
+    return <Navigate to="/admin" replace />
   }
   return <Outlet />
 }

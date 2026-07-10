@@ -11,6 +11,13 @@ import RoomDetail from "@/pages/public/RoomDetail"
 import Booking from "@/pages/customer/Booking"
 import PaymentUpload from "@/pages/customer/PaymentUpload"
 import MyBookings from "@/pages/customer/MyBookings"
+import { AdminRoute, RoleRoute } from "@/routes/ProtectedRoute"
+import { AdminLayout } from "@/layouts/AdminLayout"
+import AdminDashboard from "@/pages/admin/AdminDashboard"
+import AdminPayments from "@/pages/admin/AdminPayments"
+import OwnerReports from "@/pages/admin/OwnerReports"
+import SuperAdminUsers from "@/pages/admin/SuperAdminUsers"
+
 
 function App() {
   useEffect(() => {
@@ -32,6 +39,23 @@ function App() {
     <Route path="/booking/:roomId" element={<Booking />} />
     <Route path="/payment/:bookingId" element={<PaymentUpload />} />
     <Route path="/my-bookings" element={<MyBookings />} />
+    <Route element={<AdminRoute />}>
+  <Route element={<AdminLayout />}>
+    <Route path="/admin" element={<AdminDashboard />} />
+
+    <Route element={<RoleRoute allowedRoles={["finance", "super_admin"]} />}>
+      <Route path="/admin/payments" element={<AdminPayments />} />
+    </Route>
+
+    <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>
+      <Route path="/admin/reports" element={<OwnerReports />} />
+    </Route>
+
+    <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
+      <Route path="/admin/users" element={<SuperAdminUsers />} />
+    </Route>
+  </Route>
+</Route>
   </Route>
       </Route>
     </Routes>
