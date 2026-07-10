@@ -55,3 +55,7 @@ func (s *BookingService) GetMyBookings(userID uuid.UUID, page, limit int) ([]mod
 func (s *BookingService) GetBookingByID(id uuid.UUID) (*models.Booking, error) {
 	return s.bookingRepo.FindByID(id)
 }
+
+func (s *BookingService) ExpirePendingBookings() (int, error) {
+	return s.bookingRepo.ExpirePendingBookings()
+}

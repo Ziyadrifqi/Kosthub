@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/Ziyadrifqi/kosthub/backend/internal/config"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/database"
@@ -9,6 +10,7 @@ import (
 	"github.com/Ziyadrifqi/kosthub/backend/internal/repository"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/router"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/service"
+	"github.com/Ziyadrifqi/kosthub/backend/internal/worker"
 )
 
 func main() {
@@ -37,6 +39,7 @@ func main() {
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
 	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler)
+	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)
 	if err := r.Run(":" + cfg.AppPort); err != nil {
