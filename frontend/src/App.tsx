@@ -5,6 +5,8 @@ import { PublicLayout } from "@/layouts/PublicLayout"
 import Login from "@/pages/public/Login"
 import Register from "@/pages/public/Register"
 import Home from "@/pages/public/Home"
+import RoomList from "@/pages/public/RoomList"
+import RoomDetail from "@/pages/public/RoomDetail"
 
 function App() {
   useEffect(() => {
@@ -18,6 +20,9 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+
+        <Route path="/rooms" element={<RoomList />} />
+        <Route path="/rooms/:id" element={<RoomDetail />} />
       </Route>
     </Routes>
   )

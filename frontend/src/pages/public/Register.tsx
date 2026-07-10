@@ -27,7 +27,7 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-6">
+   <div className="min-h-[calc(100vh-73px)] flex items-center justify-center px-6 py-16">
       <motion.div
         initial="hidden"
         animate="visible"

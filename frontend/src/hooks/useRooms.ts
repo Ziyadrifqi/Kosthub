@@ -1,0 +1,32 @@
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@/lib/api"
+import type { Room, RoomListResponse } from "@/lib/types"
+
+export interface RoomFilters {
+  status?: string
+  min_price?: number
+  max_price?: number
+  page?: number
+  limit?: number
+}
+
+export function useRooms(filters: RoomFilters = {}) {
+  return useQuery({
+    queryKey: ["rooms", filters],
+    queryFn: async () => {
+      const res = await api.get<RoomListResponse>("/rooms", { params: filters })
+      return res.data
+    },
+  })
+}
+
+export function useRoomDetail(id: string | number) {
+  return useQuery({
+    queryKey: ["room", id],
+    queryFn: async () => {
+      const res = await api.get<Room>(`/rooms/${id}`)
+      return res.data
+    },
+    enabled: !!id,
+  })
+}
