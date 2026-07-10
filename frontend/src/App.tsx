@@ -4,6 +4,7 @@ import { initLenis, destroyLenis } from "@/animations/lenisSetup"
 import { PublicLayout } from "@/layouts/PublicLayout"
 import Login from "@/pages/public/Login"
 import Register from "@/pages/public/Register"
+import Home from "@/pages/public/Home"
 
 function App() {
   useEffect(() => {
@@ -14,7 +15,7 @@ function App() {
   return (
     <Routes>
       <Route element={<PublicLayout />}>
-        <Route path="/" element={<div className="p-10 text-center">Halaman Home (segera)</div>} />
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
       </Route>
