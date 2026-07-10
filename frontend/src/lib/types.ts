@@ -32,3 +32,26 @@ export interface RoomListResponse {
   page: number
   limit: number
 }
+
+export interface Booking {
+  id: string
+  user_id: string
+  room_id: number
+  room?: Room
+  check_in: string
+  duration_months: number
+  total_price: number
+  status: string // pending, confirmed, cancelled, completed
+  expires_at?: string
+  created_at: string
+}
+
+export interface Payment {
+  id: string
+  booking_id: string
+  method: string
+  proof_url?: string
+  amount: number
+  status: string
+  created_at: string
+}
