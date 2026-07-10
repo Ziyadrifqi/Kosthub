@@ -23,7 +23,7 @@ type RoomFilter struct {
 }
 
 func (r *RoomRepository) FindAll(filter RoomFilter) ([]models.Room, int64, error) {
-	var rooms []models.Room
+	rooms := []models.Room{}
 	var total int64
 
 	query := r.db.Model(&models.Room{}).
