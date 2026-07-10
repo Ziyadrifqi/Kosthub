@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom"
 import { Navbar } from "@/components/Navbar"
+import { Footer } from "@/components/Footer"
 
 export function PublicLayout() {
   return (
@@ -8,9 +9,7 @@ export function PublicLayout() {
       <main className="flex-1">
         <Outlet />
       </main>
-      <footer className="border-t border-border py-8 text-center text-sm text-text-secondary">
-        © {new Date().getFullYear()} KostHub. Semua hak dilindungi.
-      </footer>
+      <Footer />
     </div>
   )
 }

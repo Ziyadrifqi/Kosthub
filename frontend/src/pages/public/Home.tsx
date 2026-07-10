@@ -3,6 +3,7 @@ import { CityTicker } from "@/components/home/CityTicker"
 import { HowItWorks } from "@/components/home/HowItWorks"
 import { FeatureGrid } from "@/components/home/FeatureGrid"
 import { Testimonial } from "@/components/home/Testimonial"
+import { LargeTestimonial } from "@/components/home/LargeTestimonial"
 import { CtaBanner } from "@/components/home/CtaBanner"
 
 export default function Home() {
@@ -10,9 +11,12 @@ export default function Home() {
     <>
       <Hero />
       <CityTicker />
-      <HowItWorks />
+      <div id="cara-kerja">
+        <HowItWorks />
+      </div>
       <FeatureGrid />
       <Testimonial />
+      <LargeTestimonial />
       <CtaBanner />
     </>
   )
