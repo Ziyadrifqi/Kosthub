@@ -1,21 +1,81 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "react-router-dom"
+import { Search, ChevronDown, Loader2 } from "lucide-react"
 import { useRooms } from "@/hooks/useRooms"
 import { RoomCard } from "@/components/rooms/RoomCard"
-import { Loader2 } from "lucide-react"
+import { branches, getBranchIdByCode } from "@/lib/branches"
 
 export default function RoomList() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const branchCode = searchParams.get("branch") ?? ""
+
   const [page, setPage] = useState(1)
-  const { data, isLoading, isError } = useRooms({ page, limit: 9 })
+  const [searchInput, setSearchInput] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+
+  // debounce supaya tidak fetch API di tiap ketikan huruf
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchInput), 400)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  useEffect(() => {
+    setPage(1) // reset ke halaman 1 tiap kali filter berubah
+  }, [branchCode, debouncedSearch])
+
+  const branchId = branchCode ? getBranchIdByCode(branchCode) : undefined
+
+  const { data, isLoading, isError } = useRooms({
+    page,
+    limit: 9,
+    branch_id: branchId,
+    search: debouncedSearch || undefined,
+  })
   const rooms = data?.rooms ?? []
+
+  const handleBranchChange = (code: string) => {
+    if (code) {
+      setSearchParams({ branch: code })
+    } else {
+      setSearchParams({})
+    }
+  }
 
   return (
     <section className="max-w-6xl mx-auto px-6 py-14 bg-paper">
-      <div className="mb-10">
+      <div className="mb-8">
         <span className="font-mono text-xs uppercase tracking-widest text-primary">Daftar Kamar</span>
         <h1 className="font-heading font-medium text-3xl text-ink mt-1">Cari Kost</h1>
         <p className="text-text-secondary mt-1 font-mono text-sm">
           {data ? `${data.total} kamar tersedia` : "Memuat daftar kamar..."}
         </p>
+      </div>
+
+      {/* Filter bar: search + pilih cabang */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-10">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Cari nomor kamar..."
+            className="w-full border border-border rounded-sm pl-11 pr-4 py-2.5 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+          />
+        </div>
+
+        <div className="relative sm:w-56">
+          <select
+            value={branchCode}
+            onChange={(e) => handleBranchChange(e.target.value)}
+            className="w-full appearance-none border border-border rounded-sm px-4 py-2.5 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+          >
+            <option value="">Semua cabang</option>
+            {branches.map((b) => (
+              <option key={b.code} value={b.code}>{b.name}</option>
+            ))}
+          </select>
+          <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" />
+        </div>
       </div>
 
       {isLoading && (
@@ -28,13 +88,15 @@ export default function RoomList() {
         <p className="text-clay text-center py-20 font-mono text-sm">Gagal memuat data kamar. Coba lagi nanti.</p>
       )}
 
-      {data && rooms.length === 0 && (
-        <p className="text-text-secondary text-center py-20">Belum ada kamar tersedia saat ini.</p>
+      {data && rooms.length === 0 && !isLoading && (
+        <p className="text-text-secondary text-center py-20">
+          Tidak ada kamar yang cocok dengan pencarianmu.
+        </p>
       )}
 
       {data && rooms.length > 0 && (
         <>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10 mt-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
             {rooms.map((room) => (
               <RoomCard key={room.id} room={room} />
             ))}

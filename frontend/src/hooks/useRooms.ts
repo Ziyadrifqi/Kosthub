@@ -3,9 +3,11 @@ import { api } from "@/lib/api"
 import type { Room, RoomListResponse } from "@/lib/types"
 
 export interface RoomFilters {
+  branch_id?: number
   status?: string
   min_price?: number
   max_price?: number
+  search?: string
   page?: number
   limit?: number
 }

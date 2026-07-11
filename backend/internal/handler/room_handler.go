@@ -29,6 +29,7 @@ func (h *RoomHandler) ListRooms(c *gin.Context) {
 		Status:   c.Query("status"),
 		MinPrice: minPrice,
 		MaxPrice: maxPrice,
+		Search:   c.Query("search"),
 		Page:     page,
 		Limit:    limit,
 	})

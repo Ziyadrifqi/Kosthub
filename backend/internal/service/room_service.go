@@ -18,6 +18,7 @@ type ListRoomsInput struct {
 	Status   string
 	MinPrice float64
 	MaxPrice float64
+	Search   string
 	Page     int
 	Limit    int
 }
@@ -37,6 +38,7 @@ func (s *RoomService) ListRooms(input ListRoomsInput) (*ListRoomsOutput, error) 
 		MaxPrice: input.MaxPrice,
 		Page:     input.Page,
 		Limit:    input.Limit,
+		Search:   input.Search,
 	})
 	if err != nil {
 		return nil, err

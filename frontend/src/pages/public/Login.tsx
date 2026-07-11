@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, Link } from "react-router-dom"
+import { useNavigate, useLocation, Link } from "react-router-dom"
 import { useMutation } from "@tanstack/react-query"
 import { motion } from "framer-motion"
 import { KeyRound } from "lucide-react"
@@ -9,6 +9,7 @@ import { fadeUpVariant } from "@/animations/framerVariants"
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const setAuth = useAuthStore((s) => s.setAuth)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -20,7 +21,8 @@ export default function Login() {
     },
     onSuccess: (data) => {
       setAuth(data.token, data.user)
-      navigate("/")
+      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/"
+      navigate(redirectTo, { replace: true })
     },
   })
 

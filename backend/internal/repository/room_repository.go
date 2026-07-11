@@ -18,6 +18,7 @@ type RoomFilter struct {
 	Status   string
 	MinPrice float64
 	MaxPrice float64
+	Search   string
 	Page     int
 	Limit    int
 }
@@ -45,7 +46,10 @@ func (r *RoomRepository) FindAll(filter RoomFilter) ([]models.Room, int64, error
 	if filter.MaxPrice > 0 {
 		query = query.Where("price <= ?", filter.MaxPrice)
 	}
-
+	if filter.Search != "" {
+		searchTerm := "%" + filter.Search + "%"
+		query = query.Where("room_number ILIKE ?", searchTerm)
+	}
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
