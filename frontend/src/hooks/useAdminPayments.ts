@@ -18,13 +18,19 @@ export interface PaymentWithBooking {
   }
 }
 
+import { useAuthStore } from "@/store/authStore"
+
 export function usePendingPayments() {
+  const role = useAuthStore((s) => s.user?.role?.name)
+  const canAccess = role === "staff" || role === "super_admin"
+
   return useQuery({
     queryKey: ["admin-pending-payments"],
     queryFn: async () => {
       const res = await api.get<{ payments: PaymentWithBooking[]; total: number }>("/staff/payments/pending")
       return res.data
     },
+    enabled: canAccess,
   })
 }
 

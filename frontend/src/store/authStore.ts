@@ -11,6 +11,7 @@ interface User {
   name: string
   email: string
   role?: Role
+  branch_id?: number
 }
 
 interface AuthState {

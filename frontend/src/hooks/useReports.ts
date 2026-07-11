@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@/lib/api"
+import { useAuthStore } from "@/store/authStore"
 
 interface ReportSummary {
   total_revenue: number
@@ -11,11 +12,15 @@ interface ReportSummary {
 }
 
 export function useReportSummary() {
+  const role = useAuthStore((s) => s.user?.role?.name)
+  const canAccess = role === "owner" || role === "super_admin"
+
   return useQuery({
     queryKey: ["report-summary"],
     queryFn: async () => {
       const res = await api.get<ReportSummary>("/owner/reports/summary")
       return res.data
     },
+    enabled: canAccess, // jangan fetch sama sekali kalau bukan owner/super_admin
   })
 }
