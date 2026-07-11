@@ -8,10 +8,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler, bookingHandler *handler.BookingHandler, paymentHandler *handler.PaymentHandler, reportHandler *handler.ReportHandler, userHandler *handler.UserHandler, notificationHandler *handler.NotificationHandler) *gin.Engine {
+func Setup(
+	cfg *config.Config,
+	authHandler *handler.AuthHandler,
+	roomHandler *handler.RoomHandler,
+	bookingHandler *handler.BookingHandler,
+	paymentHandler *handler.PaymentHandler,
+	reportHandler *handler.ReportHandler,
+	userHandler *handler.UserHandler,
+	notificationHandler *handler.NotificationHandler,
+	favoriteHandler *handler.FavoriteHandler,
+	reviewHandler *handler.ReviewHandler,
+) *gin.Engine {
 	r := gin.Default()
 
-	// izinkan akses file upload bukti transfer
 	r.Static("/uploads", "./uploads")
 
 	r.Use(cors.New(cors.Config{
@@ -37,6 +47,7 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 		{
 			rooms.GET("", roomHandler.ListRooms)
 			rooms.GET("/:id", roomHandler.GetRoom)
+			rooms.GET("/:roomId/reviews", reviewHandler.GetRoomReviews)
 		}
 
 		protected := api.Group("/")
@@ -48,7 +59,6 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 					"email":   c.MustGet("email"),
 				})
 			})
-			protected.POST("/rooms", roomHandler.CreateRoom)
 
 			bookings := protected.Group("/bookings")
 			{
@@ -56,20 +66,8 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 				bookings.GET("/my", bookingHandler.GetMyBookings)
 				bookings.GET("/:id", bookingHandler.GetBooking)
 			}
+
 			protected.POST("/payments/upload-proof", paymentHandler.UploadProof)
-
-			admin := protected.Group("/admin")
-			admin.Use(middleware.AdminOnly())
-			{
-				admin.GET("/payments/pending", paymentHandler.GetPendingPayments)
-				admin.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
-			}
-
-			owner := protected.Group("/owner")
-			owner.Use(middleware.RoleRequired("owner", "super_admin"))
-			{
-				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
-			}
 
 			notifications := protected.Group("/notifications")
 			{
@@ -77,36 +75,41 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 				notifications.PATCH("/:id/read", notificationHandler.MarkAsRead)
 				notifications.PATCH("/read-all", notificationHandler.MarkAllAsRead)
 			}
-		}
-		// STAFF & FINANCE & SUPER_ADMIN — verifikasi payment
-		finance := protected.Group("/admin")
-		finance.Use(middleware.RoleRequired("finance", "super_admin"))
-		{
-			finance.GET("/payments/pending", paymentHandler.GetPendingPayments)
-			finance.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
-		}
 
-		// STAFF & SUPER_ADMIN — kelola kamar
-		staff := protected.Group("/staff")
-		staff.Use(middleware.RoleRequired("staff", "super_admin"))
-		{
-			staff.POST("/rooms", roomHandler.CreateRoom)
-		}
+			protected.POST("/favorites/:roomId/toggle", favoriteHandler.Toggle)
+			protected.GET("/favorites", favoriteHandler.GetMyFavorites)
+			protected.POST("/reviews", reviewHandler.CreateReview)
 
-		// OWNER & SUPER_ADMIN — laporan & audit
-		owner := protected.Group("/owner")
-		owner.Use(middleware.RoleRequired("owner", "super_admin"))
-		{
-			owner.GET("/reports/summary", reportHandler.GetSummary)
-			owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
-		}
+			// STAFF & SUPER_ADMIN — kelola kamar
+			staff := protected.Group("/staff")
+			staff.Use(middleware.RoleRequired("staff", "super_admin"))
+			{
+				staff.POST("/rooms", roomHandler.CreateRoom)
+			}
 
-		// SUPER_ADMIN ONLY — kelola user & role
-		superAdmin := protected.Group("/super-admin")
-		superAdmin.Use(middleware.RoleRequired("super_admin"))
-		{
-			superAdmin.GET("/users", userHandler.ListUsers)
-			superAdmin.PATCH("/users/:id/role", userHandler.UpdateRole)
+			// FINANCE & SUPER_ADMIN — verifikasi payment
+			finance := protected.Group("/admin")
+			finance.Use(middleware.RoleRequired("finance", "super_admin"))
+			{
+				finance.GET("/payments/pending", paymentHandler.GetPendingPayments)
+				finance.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
+			}
+
+			// OWNER & SUPER_ADMIN — laporan & audit
+			owner := protected.Group("/owner")
+			owner.Use(middleware.RoleRequired("owner", "super_admin"))
+			{
+				owner.GET("/reports/summary", reportHandler.GetSummary)
+				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
+			}
+
+			// SUPER_ADMIN ONLY — kelola user & role
+			superAdmin := protected.Group("/super-admin")
+			superAdmin.Use(middleware.RoleRequired("super_admin"))
+			{
+				superAdmin.GET("/users", userHandler.ListUsers)
+				superAdmin.PATCH("/users/:id/role", userHandler.UpdateRole)
+			}
 		}
 	}
 

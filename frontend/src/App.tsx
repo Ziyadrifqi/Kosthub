@@ -16,6 +16,7 @@ import { AdminLayout } from "@/layouts/AdminLayout"
 import AdminDashboard from "@/pages/admin/AdminDashboard"
 import AdminPayments from "@/pages/admin/AdminPayments"
 import OwnerReports from "@/pages/admin/OwnerReports"
+import Favorites from "@/pages/customer/Favorites"
 import SuperAdminUsers from "@/pages/admin/SuperAdminUsers"
 
 
@@ -54,6 +55,7 @@ function App() {
     <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
       <Route path="/admin/users" element={<SuperAdminUsers />} />
     </Route>
+    <Route path="/favorites" element={<Favorites />} />
   </Route>
 </Route>
   </Route>

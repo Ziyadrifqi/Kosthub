@@ -3,18 +3,18 @@ import { useMyBookings } from "@/hooks/useBookings"
 import { CountdownBadge } from "@/components/CountdownBadge"
 
 const statusLabel: Record<string, { text: string; class: string }> = {
-  pending: { text: "Menunggu Pembayaran", class: "bg-warning/10 text-warning" },
-  confirmed: { text: "Terkonfirmasi", class: "bg-primary/10 text-primary" },
-  cancelled: { text: "Dibatalkan", class: "bg-error/10 text-error" },
-  completed: { text: "Selesai", class: "bg-info/10 text-info" },
+  pending: { text: "Menunggu Pembayaran", class: "bg-gold/10 text-gold border-gold/30" },
+  confirmed: { text: "Terkonfirmasi", class: "bg-primary/10 text-primary border-primary/30" },
+  cancelled: { text: "Dibatalkan", class: "bg-rust/10 text-rust border-rust/30" },
+  completed: { text: "Selesai", class: "bg-section text-text-secondary border-border" },
 }
 
 export default function MyBookings() {
   const { data } = useMyBookings()
 
   return (
-    <section className="max-w-3xl mx-auto px-6 py-14">
-      <h1 className="font-heading font-extrabold text-2xl text-text mb-8">Booking Saya</h1>
+    <section className="max-w-3xl mx-auto px-6 py-14 bg-paper">
+      <h1 className="font-heading font-medium text-2xl text-ink mb-8">Booking Saya</h1>
 
       {data?.bookings.length === 0 && (
         <p className="text-text-secondary text-center py-16">Belum ada riwayat booking.</p>
@@ -22,23 +22,25 @@ export default function MyBookings() {
 
       <div className="space-y-4">
         {data?.bookings.map((b) => {
-          const status = statusLabel[b.status] ?? { text: b.status, class: "bg-section text-text-secondary" }
+          const status = statusLabel[b.status] ?? { text: b.status, class: "bg-section text-text-secondary border-border" }
           return (
-            <div key={b.id} className="bg-card border border-border rounded-xl p-5 flex justify-between items-center">
+            <div key={b.id} className="relative bg-card border border-border rounded-md p-5 flex justify-between items-center">
+              <div className="absolute -top-2 left-6 w-3 h-3 rounded-full bg-paper border-2 border-border" />
               <div>
-                <p className="font-heading font-semibold text-text">
-                  {b.room?.room_type?.name} · {b.room?.room_number}
+                <p className="font-mono text-xs text-text-secondary tracking-widest">{b.room?.room_number}</p>
+                <p className="font-heading font-medium text-ink mt-0.5">
+                  {b.room?.room_type?.name}
                 </p>
-                <p className="text-sm text-text-secondary mt-1">
+                <p className="text-sm text-text-secondary mt-1 font-mono">
                   Check-in {new Date(b.check_in).toLocaleDateString("id-ID")} · {b.duration_months} bulan
                 </p>
-                <p className="font-heading font-semibold text-primary mt-1">
+                <p className="font-mono font-semibold text-primary mt-1">
                   Rp{b.total_price.toLocaleString("id-ID")}
                 </p>
               </div>
 
               <div className="text-right space-y-2">
-                <span className={`inline-block text-xs font-heading font-semibold px-3 py-1.5 rounded-full ${status.class}`}>
+                <span className={`inline-block font-mono text-[10px] uppercase tracking-wide px-3 py-1.5 rounded-sm border ${status.class}`}>
                   {status.text}
                 </span>
                 {b.status === "pending" && b.expires_at && (

@@ -10,11 +10,11 @@ export const fadeUpVariant: Variants = {
 }
 
 export const cardHoverVariant: Variants = {
-  rest: { y: 0, scale: 1, boxShadow: "0 1px 3px rgba(17,24,39,0.08)" },
+  rest: { y: 0, scale: 1, boxShadow: "0 1px 3px rgba(30,42,34,0.10)" },
   hover: {
     y: -6,
     scale: 1.015,
-    boxShadow: "0 12px 24px rgba(16,185,129,0.15)", // pakai warna primary di shadow, khas brand
+    boxShadow: "0 12px 24px rgba(47,107,79,0.18)", // signal-green shadow, matches new primary
     transition: { duration: 0.3, ease: "easeOut" },
   },
 }

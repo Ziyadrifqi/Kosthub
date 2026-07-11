@@ -48,8 +48,15 @@ func main() {
 	userMgmtService := service.NewUserManagementService(db)
 	userHandler := handler.NewUserHandler(userMgmtService)
 
-	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler, reportHandler, userHandler, notificationHandler)
+	favRepo := repository.NewFavoriteRepository(db)
+	favService := service.NewFavoriteService(favRepo)
+	favoriteHandler := handler.NewFavoriteHandler(favService)
 
+	reviewRepo := repository.NewReviewRepository(db)
+	reviewService := service.NewReviewService(reviewRepo)
+	reviewHandler := handler.NewReviewHandler(reviewService)
+
+	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler, reportHandler, userHandler, notificationHandler, favoriteHandler, reviewHandler)
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)

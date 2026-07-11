@@ -1,8 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Menu, X } from "lucide-react"
+import { Menu, X, KeyRound } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
-import { NotificationBell } from "@/components/NotificationBell"
 
 const navLinks = [
   { label: "Cari Kost", to: "/rooms" },
@@ -21,13 +20,14 @@ export function Navbar() {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-md border-b border-border">
+    <header className="sticky top-0 z-50 bg-paper/90 backdrop-blur-md border-b border-border">
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-        <Link to="/" className="font-heading font-extrabold text-xl text-text">
+        <Link to="/" className="flex items-center gap-2 font-heading font-medium text-xl text-ink">
+          <KeyRound size={20} className="text-primary" strokeWidth={1.75} />
           Kost<span className="text-primary">Hub</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-8 font-heading font-semibold text-sm text-text-secondary">
+        <div className="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-wide text-text-secondary">
           {navLinks.map((link) => (
             <Link key={link.to} to={link.to} className="hover:text-primary transition-colors">
               {link.label}
@@ -40,11 +40,11 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center gap-3">
           {user ? (
-            <> {user && <NotificationBell />}
+            <>
               <span className="text-sm text-text-secondary">Hi, {user.name.split(" ")[0]}</span>
               <button
                 onClick={handleLogout}
-                className="font-heading font-medium text-sm border border-border rounded-lg px-4 py-2 hover:bg-section transition-colors"
+                className="font-heading font-medium text-sm border border-border rounded-sm px-4 py-2 hover:bg-section transition-colors"
               >
                 Keluar
               </button>
@@ -56,7 +56,7 @@ export function Navbar() {
               </Link>
               <Link
                 to="/register"
-                className="font-heading font-medium text-sm bg-primary hover:bg-primary-hover text-white rounded-lg px-4 py-2 transition-colors"
+                className="font-heading font-medium text-sm bg-ink hover:bg-primary text-paper rounded-sm px-4 py-2 transition-colors"
               >
                 Daftar
               </Link>
@@ -64,7 +64,7 @@ export function Navbar() {
           )}
         </div>
 
-        <button className="md:hidden text-text" onClick={() => setOpen(!open)} aria-label="Menu">
+        <button className="md:hidden text-ink" onClick={() => setOpen(!open)} aria-label="Menu">
           {open ? <X size={22} /> : <Menu size={22} />}
         </button>
       </nav>
@@ -76,7 +76,7 @@ export function Navbar() {
               key={link.to}
               to={link.to}
               onClick={() => setOpen(false)}
-              className="block font-heading font-medium text-sm text-text py-1.5"
+              className="block font-heading font-medium text-sm text-ink py-1.5"
             >
               {link.label}
             </Link>
@@ -92,7 +92,7 @@ export function Navbar() {
                 <Link
                   to="/register"
                   onClick={() => setOpen(false)}
-                  className="font-heading font-medium text-sm bg-primary text-white rounded-lg px-4 py-2 text-center"
+                  className="font-heading font-medium text-sm bg-ink text-paper rounded-sm px-4 py-2 text-center"
                 >
                   Daftar
                 </Link>

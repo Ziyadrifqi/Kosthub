@@ -23,10 +23,10 @@ export default function PaymentUpload() {
   if (!booking) return null
 
   return (
-    <section className="max-w-lg mx-auto px-6 py-14">
-      <h1 className="font-heading font-extrabold text-2xl text-text mb-1">Upload Bukti Transfer</h1>
+    <section className="max-w-lg mx-auto px-6 py-14 bg-paper">
+      <h1 className="font-heading font-medium text-2xl text-ink mb-1">Upload Bukti Transfer</h1>
       <p className="text-text-secondary mb-4">
-        Total: <strong className="text-text">Rp{booking.total_price.toLocaleString("id-ID")}</strong>
+        Total: <strong className="text-ink font-mono">Rp{booking.total_price.toLocaleString("id-ID")}</strong>
       </p>
 
       {booking.expires_at && (
@@ -35,8 +35,8 @@ export default function PaymentUpload() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 space-y-5">
-        <label className="block border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer hover:border-primary/50 transition-colors">
+      <form onSubmit={handleSubmit} className="bg-card border border-border rounded-md p-6 space-y-5">
+        <label className="block border-2 border-dashed border-border rounded-sm p-8 text-center cursor-pointer hover:border-primary/50 transition-colors">
           <input
             type="file"
             accept="image/*"
@@ -57,13 +57,13 @@ export default function PaymentUpload() {
         </label>
 
         {uploadProof.isError && (
-          <p className="text-error text-sm">Gagal upload. Coba lagi.</p>
+          <p className="text-rust text-sm font-mono">Gagal upload. Coba lagi.</p>
         )}
 
         <button
           type="submit"
           disabled={!file || uploadProof.isPending}
-          className="w-full font-heading font-medium bg-primary hover:bg-primary-hover text-white rounded-lg py-3 transition-colors disabled:opacity-60"
+          className="w-full font-heading font-medium bg-ink hover:bg-primary text-paper rounded-sm py-3 transition-colors disabled:opacity-60"
         >
           {uploadProof.isPending ? "Mengunggah..." : "Kirim Bukti Transfer"}
         </button>

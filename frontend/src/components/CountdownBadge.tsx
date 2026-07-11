@@ -22,13 +22,14 @@ export function CountdownBadge({ expiresAt }: { expiresAt: string }) {
   }, [expiresAt])
 
   const isUrgent = remaining !== "Kedaluwarsa" && remaining.startsWith("0j")
+  const isExpired = remaining === "Kedaluwarsa"
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-xs font-heading font-semibold px-3 py-1.5 rounded-full ${
-        isUrgent || remaining === "Kedaluwarsa"
-          ? "bg-error/10 text-error"
-          : "bg-warning/10 text-warning"
+      className={`inline-flex items-center gap-1.5 font-mono text-xs px-3 py-1.5 rounded-sm border ${
+        isUrgent || isExpired
+          ? "bg-rust/10 text-rust border-rust/30"
+          : "bg-gold/10 text-gold border-gold/30"
       }`}
     >
       <Clock size={13} /> Sisa waktu bayar: {remaining}

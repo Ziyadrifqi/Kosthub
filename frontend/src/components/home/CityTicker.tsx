@@ -9,11 +9,14 @@ export function CityTicker() {
   }, [])
 
   return (
-    <div className="bg-section py-6 overflow-hidden border-y border-border">
-      <div id="city-ticker" className="flex gap-10 whitespace-nowrap font-heading font-semibold text-text-secondary text-sm">
+    <div className="relative bg-ink py-5 overflow-hidden">
+      {/* torn paper edges top & bottom, like a pinned strip */}
+      <div className="absolute inset-x-0 top-0 h-1 bg-[repeating-linear-gradient(90deg,transparent,transparent_6px,rgba(242,238,227,0.15)_6px,rgba(242,238,227,0.15)_8px)]" />
+
+      <div id="city-ticker" className="flex gap-12 whitespace-nowrap font-mono text-xs uppercase tracking-widest text-paper/70">
         {[...cities, ...cities].map((city, i) => (
-          <span key={i} className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" /> {city}
+          <span key={i} className="flex items-center gap-2.5">
+            <span className="w-1 h-1 rounded-full bg-gold" /> Kost tersedia di {city}
           </span>
         ))}
       </div>

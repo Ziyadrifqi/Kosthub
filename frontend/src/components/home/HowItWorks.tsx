@@ -25,35 +25,36 @@ export function HowItWorks() {
   const ActiveIcon = steps[active].icon
 
   return (
-    <section className="py-24 px-6 bg-background">
+    <section className="py-24 px-6 bg-paper">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14">
-          <span className="font-heading font-semibold text-sm text-secondary">Alur Sederhana</span>
-          <h2 className="font-heading font-extrabold text-3xl md:text-4xl text-text mt-2">
-            Dari Cari Sampai Pindah, 3 Langkah Saja
+        <div className="text-center mb-16">
+          <span className="font-mono text-xs uppercase tracking-widest text-primary">Buku Tamu</span>
+          <h2 className="font-heading font-medium text-3xl md:text-4xl text-ink mt-3">
+            Dari Cari Sampai Pindah, 3 Cap Saja
           </h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-3">
+        <div className="grid md:grid-cols-[1fr_1.1fr] gap-12 items-center">
+          <div className="space-y-1">
             {steps.map((step, i) => (
               <button
-                key={i}
+                key={step.title}
                 onClick={() => setActive(i)}
-                className={`w-full text-left p-5 rounded-xl border transition-all ${
-                  active === i
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-primary/40"
+                className={`w-full text-left p-5 border-b border-border transition-colors ${
+                  active === i ? "bg-card" : "hover:bg-card/50"
                 }`}
               >
-                <span className="font-heading font-semibold text-text block mb-1">
-                  {String(i + 1).padStart(2, "0")}. {step.title}
-                </span>
+                <div className="flex items-baseline gap-3">
+                  <span className={`font-mono text-xs ${active === i ? "text-primary" : "text-text-secondary"}`}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="font-heading font-medium text-ink">{step.title}</span>
+                </div>
                 {active === i && (
                   <motion.p
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
-                    className="text-sm text-text-secondary mt-2"
+                    className="text-sm text-text-secondary mt-2 pl-7 leading-relaxed"
                   >
                     {step.desc}
                   </motion.p>
@@ -62,17 +63,21 @@ export function HowItWorks() {
             ))}
           </div>
 
-          <div className="relative bg-section rounded-2xl aspect-square flex items-center justify-center overflow-hidden">
+          {/* the "stamp" panel */}
+          <div className="relative bg-ink rounded-md aspect-square flex items-center justify-center overflow-hidden bg-pegboard">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
-                initial={{ opacity: 0, scale: 0.9, rotate: -4 }}
-                animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 0.9, rotate: 4 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="w-28 h-28 rounded-2xl bg-primary flex items-center justify-center shadow-lg shadow-primary/30"
+                initial={{ opacity: 0, scale: 1.3, rotate: -12 }}
+                animate={{ opacity: 1, scale: 1, rotate: -8 }}
+                exit={{ opacity: 0, scale: 0.8, rotate: 8 }}
+                transition={{ duration: 0.35, ease: "easeOut" }}
+                className="w-40 h-40 rounded-full border-4 border-gold flex flex-col items-center justify-center text-gold"
               >
-                <ActiveIcon className="w-14 h-14 text-white" strokeWidth={1.5} />
+                <ActiveIcon className="w-12 h-12" strokeWidth={1.25} />
+                <span className="font-mono text-[10px] uppercase tracking-widest mt-2">
+                  Langkah {active + 1}
+                </span>
               </motion.div>
             </AnimatePresence>
           </div>

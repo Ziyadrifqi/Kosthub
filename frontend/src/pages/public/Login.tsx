@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useMutation } from "@tanstack/react-query"
 import { motion } from "framer-motion"
+import { KeyRound } from "lucide-react"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/authStore"
 import { fadeUpVariant } from "@/animations/framerVariants"
@@ -29,49 +30,52 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-73px)] flex items-center justify-center px-6 py-16">
+    <div className="min-h-[calc(100vh-73px)] flex items-center justify-center px-6 py-16 bg-section">
       <motion.div
         initial="hidden"
         animate="visible"
         variants={fadeUpVariant}
-        className="w-full max-w-md bg-card border border-border rounded-2xl p-8 shadow-sm"
+        className="w-full max-w-md bg-card border border-border rounded-md p-8 shadow-sm"
       >
-        <h1 className="font-heading font-extrabold text-2xl text-text mb-1">Masuk ke KostHub</h1>
+        <div className="flex items-center gap-2 mb-1">
+          <KeyRound size={18} className="text-primary" />
+          <h1 className="font-heading font-medium text-2xl text-ink">Masuk ke KostHub</h1>
+        </div>
         <p className="text-text-secondary text-sm mb-6">Cari dan kelola kost impianmu.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-text mb-1.5">Email</label>
+            <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+              className="w-full border border-border rounded-sm px-4 py-2.5 text-sm bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
               placeholder="nama@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text mb-1.5">Kata Sandi</label>
+            <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">Kata Sandi</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition"
+              className="w-full border border-border rounded-sm px-4 py-2.5 text-sm bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
               placeholder="••••••••"
             />
           </div>
 
           {loginMutation.isError && (
-            <p className="text-error text-sm">Email atau kata sandi salah.</p>
+            <p className="text-rust text-sm font-mono">Email atau kata sandi salah.</p>
           )}
 
           <button
             type="submit"
             disabled={loginMutation.isPending}
-            className="w-full font-heading font-medium bg-primary hover:bg-primary-hover text-white rounded-lg py-2.5 transition-colors disabled:opacity-60"
+            className="w-full font-heading font-medium bg-ink hover:bg-primary text-paper rounded-sm py-2.5 transition-colors disabled:opacity-60"
           >
             {loginMutation.isPending ? "Memproses..." : "Masuk"}
           </button>

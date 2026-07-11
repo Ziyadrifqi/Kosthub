@@ -1,28 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+
 @theme {
-  /* === Colors === */
-  --color-primary: #10B981;
-  --color-primary-hover: #059669;
-  --color-secondary: #0EA5E9;
-  --color-secondary-hover: #0284C7;
+  /* === Colors ===
+     Diganti dari default emerald/sky (kesan generic SaaS) ke palet KostHub:
+     ink hijau tua + paper hangat + gold stempel. Lihat DESIGN.md untuk alasan. */
+  --color-primary: #2F6B4F;
+  --color-primary-hover: #25543F;
+  --color-secondary: #C79A3D;
+  --color-secondary-hover: #B08830;
 
-  --color-background: #F8FAFC;
-  --color-section: #F1F5F9;
-  --color-card: #FFFFFF;
+  --color-ink: #1E2A22;
+  --color-background: #F2EEE3;
+  --color-paper: #F2EEE3;
+  --color-section: #EAE4D3;
+  --color-card: #FFFDF8;
 
-  --color-text: #111827;
-  --color-text-secondary: #6B7280;
-  --color-border: #E5E7EB;
+  --color-text: #1E2A22;
+  --color-text-secondary: #6E6656;
+  --color-border: #DED6C3;
 
-  --color-success: #22C55E;
-  --color-warning: #F59E0B;
-  --color-error: #EF4444;
-  --color-info: #3B82F6;
+  --color-gold: #C79A3D;
+  --color-rust: #A6472F;
 
-  /* === Typography === */
-  --font-heading: "Plus Jakarta Sans", sans-serif;
-  --font-body: "Inter", sans-serif;
+  --color-success: #2F6B4F;
+  --color-warning: #C79A3D;
+  --color-error: #A6472F;
+  --color-info: #3D6A8C;
+
+  /* === Typography ===
+     heading = Newsreader (serif editorial, dipakai h1-h6)
+     body    = Plus Jakarta Sans (default teks & UI)
+     mono    = IBM Plex Mono, otomatis jadi utility class `font-mono`
+               (dipakai buat harga, kode kamar, countdown — kesan ledger/stempel) */
+  --font-heading: "Newsreader", ui-serif, Georgia, serif;
+  --font-body: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+/* Pegboard texture — signature background dipakai di Hero, HowItWorks, LargeTestimonial */
+@utility bg-pegboard {
+  background-image: radial-gradient(circle, rgba(30, 42, 34, 0.08) 1px, transparent 1.4px);
+  background-size: 18px 18px;
 }
 
 body {
