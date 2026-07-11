@@ -41,7 +41,7 @@ export default function Profile() {
       </div>
 
       <form onSubmit={handleProfileSubmit} className="relative bg-card border border-border rounded-md p-6 space-y-4">
-        <span className="absolute -top-2.5 left-6 w-3 h-3 rounded-full bg-gold shadow-sm ring-2 ring-card" />
+        <span className="absolute -top-2.5 left-6 w-3 h-3 rounded-full bg-brass shadow-sm ring-2 ring-card" />
         <h2 className="font-heading font-medium text-ink">Informasi Akun</h2>
 
         <div>
@@ -89,7 +89,7 @@ export default function Profile() {
       </form>
 
       <form onSubmit={handlePasswordSubmit} className="relative bg-card border border-border rounded-md p-6 space-y-4">
-        <span className="absolute -top-2.5 left-6 w-3 h-3 rounded-full bg-gold shadow-sm ring-2 ring-card" />
+        <span className="absolute -top-2.5 left-6 w-3 h-3 rounded-full bg-brass shadow-sm ring-2 ring-card" />
         <h2 className="font-heading font-medium text-ink">Ganti Kata Sandi</h2>
 
         <div>
@@ -116,7 +116,7 @@ export default function Profile() {
         </div>
 
         {changePassword.isError && (
-          <p className="text-rust text-sm font-mono">
+          <p className="text-clay text-sm font-mono">
             {(changePassword.error as any)?.response?.data?.error ?? "Gagal mengganti kata sandi."}
           </p>
         )}

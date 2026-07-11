@@ -79,7 +79,7 @@ export default function Register() {
           </div>
 
           {registerMutation.isError && (
-            <p className="text-rust text-sm font-mono">Gagal daftar. Email mungkin sudah dipakai.</p>
+            <p className="text-clay text-sm font-mono">Gagal daftar. Email mungkin sudah dipakai.</p>
           )}
 
           <button

@@ -34,7 +34,7 @@ export default function RoomDetail() {
   }
 
   if (isError || !room) {
-    return <p className="text-rust text-center py-24 font-mono text-sm">Kamar tidak ditemukan.</p>
+    return <p className="text-clay text-center py-24 font-mono text-sm">Kamar tidak ditemukan.</p>
   }
 
   return (
@@ -102,7 +102,7 @@ export default function RoomDetail() {
 
         {token && (
           <form onSubmit={handleReviewSubmit} className="relative bg-card border border-border rounded-md p-5 mb-6">
-            <span className="absolute -top-2.5 left-6 w-3 h-3 rounded-full bg-gold shadow-sm ring-2 ring-card" />
+            <span className="absolute -top-2.5 left-6 w-3 h-3 rounded-full bg-brass shadow-sm ring-2 ring-card" />
             <p className="font-heading font-medium text-sm text-ink mb-2">Tulis Ulasan</p>
             <div className="flex gap-1 mb-3">
               {[1, 2, 3, 4, 5].map((n) => (
@@ -119,7 +119,7 @@ export default function RoomDetail() {
               className="w-full border border-border rounded-sm px-4 py-2.5 text-sm bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none transition"
             />
             {createReview.isError && (
-              <p className="text-rust text-xs mt-2 font-mono">
+              <p className="text-clay text-xs mt-2 font-mono">
                 Kamu hanya bisa review kamar yang pernah kamu tempati (booking confirmed/completed).
               </p>
             )}

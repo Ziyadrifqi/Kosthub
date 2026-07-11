@@ -57,7 +57,7 @@ export default function PaymentUpload() {
         </label>
 
         {uploadProof.isError && (
-          <p className="text-rust text-sm font-mono">Gagal upload. Coba lagi.</p>
+          <p className="text-clay text-sm font-mono">Gagal upload. Coba lagi.</p>
         )}
 
         <button

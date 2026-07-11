@@ -25,7 +25,7 @@ export default function RoomList() {
       )}
 
       {isError && (
-        <p className="text-rust text-center py-20 font-mono text-sm">Gagal memuat data kamar. Coba lagi nanti.</p>
+        <p className="text-clay text-center py-20 font-mono text-sm">Gagal memuat data kamar. Coba lagi nanti.</p>
       )}
 
       {data && rooms.length === 0 && (

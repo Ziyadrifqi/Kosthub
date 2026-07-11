@@ -69,7 +69,7 @@ export default function Login() {
           </div>
 
           {loginMutation.isError && (
-            <p className="text-rust text-sm font-mono">Email atau kata sandi salah.</p>
+            <p className="text-clay text-sm font-mono">Email atau kata sandi salah.</p>
           )}
 
           <button

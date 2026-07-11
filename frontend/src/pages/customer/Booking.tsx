@@ -67,7 +67,7 @@ export default function Booking() {
           </span>
         </div>
 
-        <div className="flex items-start gap-2 bg-gold/10 text-gold border border-gold/30 text-xs rounded-sm p-3">
+        <div className="flex items-start gap-2 bg-brass/10 text-brass border border-brass/30 text-xs rounded-sm p-3">
           <AlertCircle size={16} className="shrink-0 mt-0.5" />
           <p>
             Setelah booking dibuat, kamu punya waktu <strong>24 jam</strong> untuk upload bukti transfer.
@@ -76,7 +76,7 @@ export default function Booking() {
         </div>
 
         {createBooking.isError && (
-          <p className="text-rust text-sm font-mono">
+          <p className="text-clay text-sm font-mono">
             Gagal booking. Kamar mungkin sudah dipesan orang lain, coba kamar lain.
           </p>
         )}

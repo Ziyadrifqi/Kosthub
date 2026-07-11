@@ -3,9 +3,9 @@ import { useMyBookings } from "@/hooks/useBookings"
 import { CountdownBadge } from "@/components/CountdownBadge"
 
 const statusLabel: Record<string, { text: string; class: string }> = {
-  pending: { text: "Menunggu Pembayaran", class: "bg-gold/10 text-gold border-gold/30" },
+  pending: { text: "Menunggu Pembayaran", class: "bg-brass/10 text-brass border-brass/30" },
   confirmed: { text: "Terkonfirmasi", class: "bg-primary/10 text-primary border-primary/30" },
-  cancelled: { text: "Dibatalkan", class: "bg-rust/10 text-rust border-rust/30" },
+  cancelled: { text: "Dibatalkan", class: "bg-clay/10 text-clay border-clay/30" },
   completed: { text: "Selesai", class: "bg-section text-text-secondary border-border" },
 }
 
