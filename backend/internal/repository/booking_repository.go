@@ -91,17 +91,19 @@ func (r *BookingRepository) FindByID(id uuid.UUID) (*models.Booking, error) {
 // ExpirePendingBookings mencari booking pending yang sudah lewat batas waktu
 // dan belum ada payment sama sekali, lalu cancel booking + kembalikan status kamar.
 // Ini dipanggil berkala oleh background worker, BUKAN dari request user.
-func (r *BookingRepository) ExpirePendingBookings() (int, error) {
+func (r *BookingRepository) ExpirePendingBookingsWithUsers() (int, []uuid.UUID, error) {
 	var expiredBookings []models.Booking
 
 	err := r.db.
 		Where("status = ? AND expires_at < ?", "pending", time.Now()).
 		Find(&expiredBookings).Error
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 
 	count := 0
+	var affectedUsers []uuid.UUID
+
 	for _, booking := range expiredBookings {
 		err := r.db.Transaction(func(tx *gorm.DB) error {
 			var b models.Booking
@@ -127,6 +129,7 @@ func (r *BookingRepository) ExpirePendingBookings() (int, error) {
 				return err
 			}
 
+			affectedUsers = append(affectedUsers, b.UserID)
 			return nil
 		})
 
@@ -135,5 +138,5 @@ func (r *BookingRepository) ExpirePendingBookings() (int, error) {
 		}
 	}
 
-	return count, nil
+	return count, affectedUsers, nil
 }

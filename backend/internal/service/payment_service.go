@@ -7,12 +7,13 @@ import (
 )
 
 type PaymentService struct {
-	paymentRepo *repository.PaymentRepository
-	bookingRepo *repository.BookingRepository
+	paymentRepo  *repository.PaymentRepository
+	bookingRepo  *repository.BookingRepository
+	notifService *NotificationService
 }
 
-func NewPaymentService(paymentRepo *repository.PaymentRepository, bookingRepo *repository.BookingRepository) *PaymentService {
-	return &PaymentService{paymentRepo: paymentRepo, bookingRepo: bookingRepo}
+func NewPaymentService(paymentRepo *repository.PaymentRepository, bookingRepo *repository.BookingRepository, notifService *NotificationService) *PaymentService {
+	return &PaymentService{paymentRepo: paymentRepo, bookingRepo: bookingRepo, notifService: notifService}
 }
 
 type UploadProofInput struct {
@@ -46,7 +47,34 @@ func (s *PaymentService) GetPendingPayments(page, limit int) ([]models.Payment, 
 }
 
 func (s *PaymentService) VerifyPayment(paymentID uuid.UUID, approve bool, adminID uuid.UUID, note, ipAddress string) error {
-	return s.paymentRepo.VerifyTx(paymentID, approve, adminID, note, ipAddress)
+	payment, err := s.paymentRepo.FindByID(paymentID)
+	if err != nil {
+		return err
+	}
+
+	if err := s.paymentRepo.VerifyTx(paymentID, approve, adminID, note, ipAddress); err != nil {
+		return err
+	}
+
+	booking, err := s.bookingRepo.FindByID(payment.BookingID)
+	if err == nil && booking != nil {
+		if approve {
+			s.notifService.Notify(
+				booking.UserID,
+				"Pembayaran Diverifikasi",
+				"Pembayaranmu sudah diverifikasi, booking kamu terkonfirmasi. Selamat!",
+				"success",
+			)
+		} else {
+			body := "Pembayaranmu ditolak."
+			if note != "" {
+				body += " Alasan: " + note
+			}
+			s.notifService.Notify(booking.UserID, "Pembayaran Ditolak", body, "error")
+		}
+	}
+
+	return nil
 }
 
 func (s *PaymentService) GetAuditLogs(paymentID uuid.UUID) ([]models.PaymentAuditLog, error) {

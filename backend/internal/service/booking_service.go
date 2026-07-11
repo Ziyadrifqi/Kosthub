@@ -9,12 +9,13 @@ import (
 )
 
 type BookingService struct {
-	bookingRepo *repository.BookingRepository
-	roomRepo    *repository.RoomRepository
+	bookingRepo  *repository.BookingRepository
+	roomRepo     *repository.RoomRepository
+	notifService *NotificationService
 }
 
-func NewBookingService(bookingRepo *repository.BookingRepository, roomRepo *repository.RoomRepository) *BookingService {
-	return &BookingService{bookingRepo: bookingRepo, roomRepo: roomRepo}
+func NewBookingService(bookingRepo *repository.BookingRepository, roomRepo *repository.RoomRepository, notifService *NotificationService) *BookingService {
+	return &BookingService{bookingRepo: bookingRepo, roomRepo: roomRepo, notifService: notifService}
 }
 
 type CreateBookingInput struct {
@@ -57,5 +58,19 @@ func (s *BookingService) GetBookingByID(id uuid.UUID) (*models.Booking, error) {
 }
 
 func (s *BookingService) ExpirePendingBookings() (int, error) {
-	return s.bookingRepo.ExpirePendingBookings()
+	count, expiredUserIDs, err := s.bookingRepo.ExpirePendingBookingsWithUsers()
+	if err != nil {
+		return 0, err
+	}
+
+	for _, userID := range expiredUserIDs {
+		s.notifService.Notify(
+			userID,
+			"Booking Dibatalkan",
+			"Booking kamu otomatis dibatalkan karena tidak ada bukti transfer dalam 24 jam.",
+			"warning",
+		)
+	}
+
+	return count, nil
 }

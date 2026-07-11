@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Menu, X } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
+import { NotificationBell } from "@/components/NotificationBell"
 
 const navLinks = [
   { label: "Cari Kost", to: "/rooms" },
@@ -39,7 +40,7 @@ export function Navbar() {
 
         <div className="hidden md:flex items-center gap-3">
           {user ? (
-            <>
+            <> {user && <NotificationBell />}
               <span className="text-sm text-text-secondary">Hi, {user.name.split(" ")[0]}</span>
               <button
                 onClick={handleLogout}

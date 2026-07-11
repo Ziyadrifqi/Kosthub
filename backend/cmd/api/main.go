@@ -30,12 +30,16 @@ func main() {
 	roomHandler := handler.NewRoomHandler(roomService)
 
 	// Bookings
+	notifRepo := repository.NewNotificationRepository(db)
+	notifService := service.NewNotificationService(notifRepo)
+	notificationHandler := handler.NewNotificationHandler(notifService)
+
 	bookingRepo := repository.NewBookingRepository(db)
-	bookingService := service.NewBookingService(bookingRepo, roomRepo)
+	bookingService := service.NewBookingService(bookingRepo, roomRepo, notifService)
 	bookingHandler := handler.NewBookingHandler(bookingService)
 
 	paymentRepo := repository.NewPaymentRepository(db)
-	paymentService := service.NewPaymentService(paymentRepo, bookingRepo)
+	paymentService := service.NewPaymentService(paymentRepo, bookingRepo, notifService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
 	reportService := service.NewReportService(db)
@@ -44,7 +48,8 @@ func main() {
 	userMgmtService := service.NewUserManagementService(db)
 	userHandler := handler.NewUserHandler(userMgmtService)
 
-	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler, reportHandler, userHandler)
+	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler, reportHandler, userHandler, notificationHandler)
+
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)

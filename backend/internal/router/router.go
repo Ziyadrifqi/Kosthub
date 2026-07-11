@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler, bookingHandler *handler.BookingHandler, paymentHandler *handler.PaymentHandler, reportHandler *handler.ReportHandler, userHandler *handler.UserHandler) *gin.Engine {
+func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *handler.RoomHandler, bookingHandler *handler.BookingHandler, paymentHandler *handler.PaymentHandler, reportHandler *handler.ReportHandler, userHandler *handler.UserHandler, notificationHandler *handler.NotificationHandler) *gin.Engine {
 	r := gin.Default()
 
 	// izinkan akses file upload bukti transfer
@@ -69,6 +69,13 @@ func Setup(cfg *config.Config, authHandler *handler.AuthHandler, roomHandler *ha
 			owner.Use(middleware.RoleRequired("owner", "super_admin"))
 			{
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
+			}
+
+			notifications := protected.Group("/notifications")
+			{
+				notifications.GET("", notificationHandler.GetMyNotifications)
+				notifications.PATCH("/:id/read", notificationHandler.MarkAsRead)
+				notifications.PATCH("/read-all", notificationHandler.MarkAllAsRead)
 			}
 		}
 		// STAFF & FINANCE & SUPER_ADMIN — verifikasi payment
