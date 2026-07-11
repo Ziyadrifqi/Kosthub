@@ -9,6 +9,7 @@ import (
 	"github.com/Ziyadrifqi/kosthub/backend/internal/models"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/repository"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -89,6 +90,56 @@ func (s *AuthService) Login(email, password string) (string, *models.User, error
 	}
 
 	return token, user, nil
+}
+
+var ErrWrongCurrentPassword = errors.New("current password is incorrect")
+
+type UpdateProfileInput struct {
+	UserID uuid.UUID
+	Name   string
+	Phone  string
+}
+
+func (s *AuthService) UpdateProfile(input UpdateProfileInput) (*models.User, error) {
+	user, err := s.userRepo.FindByID(input.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Name = input.Name
+	if input.Phone != "" {
+		user.Phone = &input.Phone
+	}
+
+	if err := s.userRepo.Update(user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+type ChangePasswordInput struct {
+	UserID          uuid.UUID
+	CurrentPassword string
+	NewPassword     string
+}
+
+func (s *AuthService) ChangePassword(input ChangePasswordInput) error {
+	user, err := s.userRepo.FindByID(input.UserID)
+	if err != nil {
+		return err
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.CurrentPassword)); err != nil {
+		return ErrWrongCurrentPassword
+	}
+
+	newHash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepo.UpdatePassword(input.UserID, string(newHash))
 }
 
 func (s *AuthService) generateToken(user *models.User) (string, error) {

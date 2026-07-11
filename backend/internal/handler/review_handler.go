@@ -52,7 +52,7 @@ func (h *ReviewHandler) CreateReview(c *gin.Context) {
 }
 
 func (h *ReviewHandler) GetRoomReviews(c *gin.Context) {
-	roomID, err := strconv.Atoi(c.Param("roomId"))
+	roomID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
 		return

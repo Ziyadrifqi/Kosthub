@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Menu, X, KeyRound } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
+import { NotificationBell } from "@/components/NotificationBell"
 
 const navLinks = [
   { label: "Cari Kost", to: "/rooms" },
@@ -34,13 +35,18 @@ export function Navbar() {
             </Link>
           ))}
           {user && (
-            <Link to="/my-bookings" className="hover:text-primary transition-colors">Booking Saya</Link>
+            <>
+              <Link to="/my-bookings" className="hover:text-primary transition-colors">Booking Saya</Link>
+              <Link to="/favorites" className="hover:text-primary transition-colors">Favorit</Link>
+              <Link to="/profile" className="hover:text-primary transition-colors">Profil</Link>
+            </>
           )}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
+              <NotificationBell />
               <span className="text-sm text-text-secondary">Hi, {user.name.split(" ")[0]}</span>
               <button
                 onClick={handleLogout}
@@ -83,9 +89,14 @@ export function Navbar() {
           ))}
           <div className="pt-3 border-t border-border flex flex-col gap-2">
             {user ? (
-              <button onClick={handleLogout} className="font-heading font-medium text-sm text-left py-1.5">
-                Keluar
-              </button>
+              <>
+                <Link to="/my-bookings" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Booking Saya</Link>
+                <Link to="/favorites" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Favorit</Link>
+                <Link to="/profile" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Profil</Link>
+                <button onClick={handleLogout} className="font-heading font-medium text-sm text-left py-1.5">
+                  Keluar
+                </button>
+              </>
             ) : (
               <>
                 <Link to="/login" onClick={() => setOpen(false)} className="font-heading font-medium text-sm py-1.5">Masuk</Link>

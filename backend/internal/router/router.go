@@ -47,7 +47,7 @@ func Setup(
 		{
 			rooms.GET("", roomHandler.ListRooms)
 			rooms.GET("/:id", roomHandler.GetRoom)
-			rooms.GET("/:roomId/reviews", reviewHandler.GetRoomReviews)
+			rooms.GET("/:id/reviews", reviewHandler.GetRoomReviews)
 		}
 
 		protected := api.Group("/")
@@ -59,6 +59,9 @@ func Setup(
 					"email":   c.MustGet("email"),
 				})
 			})
+
+			protected.PATCH("/profile", authHandler.UpdateProfile)
+			protected.PATCH("/profile/password", authHandler.ChangePassword)
 
 			bookings := protected.Group("/bookings")
 			{

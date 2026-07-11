@@ -41,3 +41,13 @@ func (r *UserRepository) EmailExists(email string) (bool, error) {
 	err := r.db.Model(&models.User{}).Where("email = ?", email).Count(&count).Error
 	return count > 0, err
 }
+
+func (r *UserRepository) Update(user *models.User) error {
+	return r.db.Save(user).Error
+}
+
+func (r *UserRepository) UpdatePassword(userID uuid.UUID, newHash string) error {
+	return r.db.Model(&models.User{}).
+		Where("id = ?", userID).
+		Update("password_hash", newHash).Error
+}
