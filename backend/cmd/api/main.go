@@ -11,6 +11,7 @@ import (
 	"github.com/Ziyadrifqi/kosthub/backend/internal/router"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/service"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/worker"
+	"github.com/Ziyadrifqi/kosthub/backend/internal/ws"
 )
 
 func main() {
@@ -56,7 +57,13 @@ func main() {
 	reviewService := service.NewReviewService(reviewRepo)
 	reviewHandler := handler.NewReviewHandler(reviewService)
 
-	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler, reportHandler, userHandler, notificationHandler, favoriteHandler, reviewHandler)
+	hub := ws.NewHub()
+	chatRepo := repository.NewChatRepository(db)
+	chatService := service.NewChatService(chatRepo)
+	chatHandler := handler.NewChatHandler(chatService)
+	wsHandler := handler.NewWSHandler(hub, chatService, cfg.JWTSecret)
+
+	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler, reportHandler, userHandler, notificationHandler, favoriteHandler, reviewHandler, chatHandler, wsHandler)
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)

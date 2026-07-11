@@ -1,125 +1,104 @@
-import { useEffect, useRef } from "react"
-import { Link } from "react-router-dom"
+import { useEffect, useRef, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
-import { KeyRound } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import { fadeUpVariant, staggerContainer } from "@/animations/framerVariants"
 import { textReveal } from "@/animations/gsapScroll"
-
-const pinnedRooms = [
-  { code: "A-104", type: "Kamar Single", price: "1.2jt", verified: true, rotate: -6 },
-  { code: "B-207", type: "Kamar Double", price: "1.8jt", verified: true, rotate: 4 },
-  { code: "C-311", type: "Kamar Studio", price: "2.1jt", verified: false, rotate: -3 },
-]
+import { branches } from "@/lib/branches"
 
 export function Hero() {
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const navigate = useNavigate()
+  const [branch, setBranch] = useState<string>("")
 
   useEffect(() => {
     if (headingRef.current) textReveal("#hero-heading")
   }, [])
 
+  const handleSearch = () => {
+    navigate(branch ? `/rooms?branch=${branch}` : "/rooms")
+  }
+
   return (
-    <section className="relative overflow-hidden bg-paper pt-16 pb-24 px-6">
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.1fr_0.9fr] gap-16 items-center">
-        {/* Left: the pitch */}
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={staggerContainer}
-        >
-          <motion.span
+    <section className="relative bg-paper pt-16 pb-20 px-6">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-14 items-end">
+        <motion.div initial="hidden" animate="visible" variants={staggerContainer}>
+          <motion.p
             variants={fadeUpVariant}
-            className="inline-flex items-center gap-2 font-mono text-xs tracking-wide uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-sm border border-primary/20"
+            className="font-mono text-xs uppercase tracking-widest text-primary mb-5"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            500+ penyewa aktif · terverifikasi manual
-          </motion.span>
+            Direktori Hunian &middot; 4 Cabang, Satu Standar
+          </motion.p>
 
           <h1
             id="hero-heading"
             ref={headingRef}
-            className="font-heading font-medium text-5xl md:text-6xl text-ink leading-[1.05] tracking-tight mt-6"
+            className="font-heading font-medium text-5xl md:text-6xl text-ink leading-[1.08] tracking-tight"
           >
-            Cari kost itu <em className="not-italic text-primary">nggak</em> harus
-            keliling seharian.
+            Hunian terpilih,
+            <br />
+            dikelola satu tangan.
           </h1>
 
           <motion.p
             variants={fadeUpVariant}
-            className="mt-6 text-lg text-text-secondary max-w-lg leading-relaxed"
+            className="mt-6 text-lg text-text-secondary max-w-md leading-relaxed"
           >
-            Setiap kamar di KostHub sudah dicek langsung sama tim kami, harganya
-            jujur dari awal, dan kamu bisa booking dari HP — tanpa harus ketemu
-            calo atau nunggu balesan chat berhari-hari.
+            KostHub bukan marketplace acak — kami satu manajemen dengan standar
+            kebersihan, keamanan, dan harga yang sama di setiap cabang: Depok,
+            Jakarta Selatan, Tangerang, dan Cikarang.
           </motion.p>
 
-          <motion.div variants={fadeUpVariant} className="mt-9 flex flex-wrap items-center gap-4">
-            <Link
-              to="/rooms"
-              className="font-heading font-medium bg-ink hover:bg-primary text-paper rounded-sm px-7 py-3.5 transition-colors"
+          <motion.div variants={fadeUpVariant} className="mt-8 bg-card border border-border rounded-md p-2 flex flex-col sm:flex-row gap-2 max-w-lg">
+            <div className="relative flex-1">
+              <select
+                value={branch}
+                onChange={(e) => setBranch(e.target.value)}
+                className="w-full appearance-none bg-transparent px-4 py-3 text-sm font-mono text-ink focus:outline-none"
+              >
+                <option value="">Semua cabang</option>
+                {branches.map((b) => (
+                  <option key={b.code} value={b.code}>{b.name}</option>
+                ))}
+              </select>
+              <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" />
+            </div>
+            <button
+              onClick={handleSearch}
+              className="font-heading font-medium bg-ink hover:bg-primary text-paper rounded-sm px-6 py-3 transition-colors"
             >
-              Cari Kost Sekarang
-            </Link>
-            <Link
-              to="/register"
-              className="font-heading font-medium text-ink border-b-2 border-ink/30 hover:border-primary hover:text-primary pb-1 transition-colors"
-            >
-              Daftar gratis →
-            </Link>
+              Cari Kamar
+            </button>
           </motion.div>
 
-          <motion.div variants={fadeUpVariant} className="mt-10 flex items-center gap-6 text-sm text-text-secondary font-mono">
-            <span>2.400+ kamar</span>
+          <motion.div variants={fadeUpVariant} className="mt-8 flex items-center gap-5 font-mono text-xs text-text-secondary uppercase tracking-wide">
+            <span>5 lokasi</span>
             <span className="w-1 h-1 rounded-full bg-border" />
-            <span>32 kota</span>
+            <span>1 manajemen</span>
             <span className="w-1 h-1 rounded-full bg-border" />
-            <span>4.8/5 rating</span>
+            <span>Sejak 2021</span>
           </motion.div>
         </motion.div>
 
-        {/* Right: the pegboard — signature element */}
+        {/* editorial photo panel — masthead spread */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="relative bg-ink rounded-md p-8 md:p-10 bg-pegboard bg-pegboard shadow-2xl shadow-ink/20 min-h-[420px]"
+          className="relative"
         >
-          <div className="flex flex-col gap-6 items-center">
-            {pinnedRooms.map((room, i) => (
-              <div
-                key={room.code}
-                style={{ transform: `rotate(${room.rotate}deg)` }}
-                className={`relative bg-card rounded-md p-4 w-full max-w-[260px] shadow-lg ${
-                  i === 1 ? "self-end" : i === 2 ? "self-start" : ""
-                }`}
-              >
-                {/* punched hole + pin */}
-                <div className="absolute -top-2 left-6 w-3 h-3 rounded-full bg-paper border border-border" />
-                <div className="absolute -top-3 left-[26px] w-2 h-2 rounded-full bg-gold shadow-sm" />
-
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-mono text-xs text-text-secondary tracking-wider">{room.code}</p>
-                    <p className="font-heading font-medium text-ink mt-0.5">{room.type}</p>
-                  </div>
-                  <KeyRound size={16} className="text-border shrink-0 mt-1" />
-                </div>
-
-                <div className="flex items-end justify-between mt-4">
-                  <p className="font-mono font-semibold text-primary text-sm">
-                    Rp{room.price}<span className="text-text-secondary font-normal">/bln</span>
-                  </p>
-                  {room.verified && (
-                    <span
-                      className="font-mono text-[9px] uppercase tracking-wider text-rust border border-rust/50 rounded-sm px-1.5 py-0.5 rotate-[-8deg]"
-                    >
-                      Terverifikasi
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="bg-primary rounded-md h-[380px] flex items-end p-6">
+            <div>
+              <p className="font-mono text-[11px] uppercase tracking-widest text-paper/70">Cabang unggulan</p>
+              <p className="font-heading font-medium text-2xl text-paper mt-1">Jakarta Selatan</p>
+              <Link to="/rooms?branch=JKS" className="inline-block mt-3 text-sm text-paper/90 border-b border-paper/40 hover:border-paper pb-0.5 transition-colors">
+                Lihat kamar tersedia →
+              </Link>
+            </div>
           </div>
+          <p className="font-mono text-[11px] uppercase tracking-widest text-text-secondary mt-3">
+            Fig. 01 — Ruang tamu bersama, Cabang Jakarta Selatan
+          </p>
         </motion.div>
       </div>
     </section>

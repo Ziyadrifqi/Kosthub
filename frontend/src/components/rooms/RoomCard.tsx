@@ -1,22 +1,28 @@
 import { Link } from "react-router-dom"
 import { motion } from "framer-motion"
-import { MapPin } from "lucide-react"
+import { MapPin, Heart } from "lucide-react"
 import { cardHoverVariant } from "@/animations/framerVariants"
+import { useToggleFavorite } from "@/hooks/useFavorites"
+import { useAuthStore } from "@/store/authStore"
 import type { Room } from "@/lib/types"
 
 export function RoomCard({ room }: { room: Room }) {
   const primaryImage = room.images?.find((img) => img.is_primary) ?? room.images?.[0]
+  const toggleFavorite = useToggleFavorite()
+  const token = useAuthStore((s) => s.token)
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!token) return
+    toggleFavorite.mutate(room.id)
+  }
 
   return (
-    <motion.div initial="rest" whileHover="hover" variants={cardHoverVariant} className="relative">
-      {/* the punched hole + loop — key tag signature */}
-      <div className="absolute -top-2.5 left-6 z-10 w-4 h-4 rounded-full bg-paper border-2 border-border" />
+    <motion.div initial="rest" whileHover="hover" variants={cardHoverVariant}>
+      <Link to={`/rooms/${room.id}`} className="block">
+        <p className="font-mono text-2xl font-medium text-brass leading-none">{room.room_number}</p>
 
-      <Link
-        to={`/rooms/${room.id}`}
-        className="block bg-card border border-border rounded-md overflow-hidden pt-3"
-      >
-        <div className="h-44 mx-3 rounded-sm overflow-hidden bg-gradient-to-br from-primary/15 to-section relative">
+        <div className="relative mt-3 h-44 rounded-sm overflow-hidden bg-gradient-to-br from-primary/15 to-section">
           {primaryImage ? (
             <img src={primaryImage.image_url} alt={room.room_number} className="w-full h-full object-cover" />
           ) : (
@@ -33,17 +39,26 @@ export function RoomCard({ room }: { room: Room }) {
           >
             {room.status === "available" ? "Tersedia" : room.status === "booked" ? "Terisi" : "Maintenance"}
           </span>
+
+          {token && (
+            <button
+              onClick={handleFavoriteClick}
+              aria-label="Simpan ke favorit"
+              className="absolute top-3 left-3 w-8 h-8 rounded-full bg-card/90 border border-border flex items-center justify-center hover:scale-110 transition-transform"
+            >
+              <Heart size={15} className={room.is_favorited ? "fill-clay text-clay" : "text-clay"} />
+            </button>
+          )}
         </div>
 
-        <div className="p-4">
-          <p className="font-mono text-[11px] text-text-secondary tracking-widest">{room.room_number}</p>
-          <h3 className="font-heading font-medium text-ink mt-0.5">
+        <div className="mt-3 border-t border-border pt-3">
+          <h3 className="font-heading font-medium text-ink">
             {room.room_type?.name ?? "Kamar"}
           </h3>
           <p className="flex items-center gap-1 text-sm text-text-secondary mt-1">
             <MapPin size={14} /> {room.branch?.name ?? "-"}
           </p>
-          <p className="font-mono font-semibold text-primary mt-3">
+          <p className="font-mono font-semibold text-primary mt-2">
             Rp{room.price.toLocaleString("id-ID")}
             <span className="font-normal text-text-secondary text-sm"> /bulan</span>
           </p>

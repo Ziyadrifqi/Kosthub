@@ -28,8 +28,8 @@ export function CountdownBadge({ expiresAt }: { expiresAt: string }) {
     <span
       className={`inline-flex items-center gap-1.5 font-mono text-xs px-3 py-1.5 rounded-sm border ${
         isUrgent || isExpired
-          ? "bg-rust/10 text-rust border-rust/30"
-          : "bg-gold/10 text-gold border-gold/30"
+          ? "bg-clay/10 text-clay border-clay/30"
+          : "bg-brass/10 text-brass border-brass/30"
       }`}
     >
       <Clock size={13} /> Sisa waktu bayar: {remaining}

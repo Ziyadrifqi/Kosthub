@@ -5,8 +5,8 @@ import { Search, ShieldCheck, KeyRound } from "lucide-react"
 const steps = [
   {
     icon: Search,
-    title: "Cari & Bandingkan",
-    desc: "Filter kamar berdasarkan lokasi, harga, dan fasilitas. Lihat foto asli dan review penghuni sebelumnya.",
+    title: "Pilih Cabang & Kamar",
+    desc: "Filter berdasarkan cabang, harga, dan fasilitas. Lihat foto asli dan review penghuni sebelumnya.",
   },
   {
     icon: ShieldCheck,
@@ -27,34 +27,32 @@ export function HowItWorks() {
   return (
     <section className="py-24 px-6 bg-paper">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <span className="font-mono text-xs uppercase tracking-widest text-primary">Buku Tamu</span>
-          <h2 className="font-heading font-medium text-3xl md:text-4xl text-ink mt-3">
-            Dari Cari Sampai Pindah, 3 Cap Saja
+        <div className="mb-14">
+          <p className="font-mono text-xs uppercase tracking-widest text-primary mb-3">Alur</p>
+          <h2 className="font-heading font-medium text-3xl md:text-4xl text-ink">
+            Dari cari sampai pindah, tiga langkah
           </h2>
         </div>
 
         <div className="grid md:grid-cols-[1fr_1.1fr] gap-12 items-center">
-          <div className="space-y-1">
+          <div>
             {steps.map((step, i) => (
               <button
                 key={step.title}
                 onClick={() => setActive(i)}
-                className={`w-full text-left p-5 border-b border-border transition-colors ${
-                  active === i ? "bg-card" : "hover:bg-card/50"
+                className={`w-full text-left py-5 border-b border-border transition-colors ${
+                  active === i ? "" : "opacity-60 hover:opacity-100"
                 }`}
               >
-                <div className="flex items-baseline gap-3">
-                  <span className={`font-mono text-xs ${active === i ? "text-primary" : "text-text-secondary"}`}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="font-heading font-medium text-ink">{step.title}</span>
+                <div className="flex items-baseline gap-4">
+                  <span className="font-mono text-xs text-brass">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-heading font-medium text-lg text-ink">{step.title}</span>
                 </div>
                 {active === i && (
                   <motion.p
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
-                    className="text-sm text-text-secondary mt-2 pl-7 leading-relaxed"
+                    className="text-sm text-text-secondary mt-2 pl-9 leading-relaxed"
                   >
                     {step.desc}
                   </motion.p>
@@ -63,20 +61,19 @@ export function HowItWorks() {
             ))}
           </div>
 
-          {/* the "stamp" panel */}
-          <div className="relative bg-ink rounded-md aspect-square flex items-center justify-center overflow-hidden bg-pegboard">
+          <div className="relative bg-primary rounded-md aspect-[4/3] flex items-center justify-center">
             <AnimatePresence mode="wait">
               <motion.div
                 key={active}
-                initial={{ opacity: 0, scale: 1.3, rotate: -12 }}
-                animate={{ opacity: 1, scale: 1, rotate: -8 }}
-                exit={{ opacity: 0, scale: 0.8, rotate: 8 }}
-                transition={{ duration: 0.35, ease: "easeOut" }}
-                className="w-40 h-40 rounded-full border-4 border-gold flex flex-col items-center justify-center text-gold"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="flex flex-col items-center text-paper"
               >
                 <ActiveIcon className="w-12 h-12" strokeWidth={1.25} />
-                <span className="font-mono text-[10px] uppercase tracking-widest mt-2">
-                  Langkah {active + 1}
+                <span className="font-mono text-[11px] uppercase tracking-widest mt-3">
+                  Langkah {active + 1} dari 3
                 </span>
               </motion.div>
             </AnimatePresence>

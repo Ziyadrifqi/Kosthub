@@ -19,10 +19,16 @@ func Setup(
 	notificationHandler *handler.NotificationHandler,
 	favoriteHandler *handler.FavoriteHandler,
 	reviewHandler *handler.ReviewHandler,
+	chatHandler *handler.ChatHandler,
+	wsHandler *handler.WSHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
 	r.Static("/uploads", "./uploads")
+
+	// WebSocket — taruh SEBELUM middleware CORS supaya tidak ikut ke-block,
+	// karena WebSocket handshake tidak selalu cocok dengan CORS middleware biasa
+	r.GET("/ws/chat", wsHandler.HandleConnection)
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
@@ -79,26 +85,30 @@ func Setup(
 				notifications.PATCH("/read-all", notificationHandler.MarkAllAsRead)
 			}
 
+			chat := protected.Group("/chat")
+			{
+				chat.GET("/my-room", chatHandler.GetMyRoom)
+				chat.GET("/:roomId/messages", chatHandler.GetMessages)
+			}
+
 			protected.POST("/favorites/:roomId/toggle", favoriteHandler.Toggle)
 			protected.GET("/favorites", favoriteHandler.GetMyFavorites)
 			protected.POST("/reviews", reviewHandler.CreateReview)
 
-			// STAFF & SUPER_ADMIN — kelola kamar
 			staff := protected.Group("/staff")
 			staff.Use(middleware.RoleRequired("staff", "super_admin"))
 			{
 				staff.POST("/rooms", roomHandler.CreateRoom)
 			}
 
-			// FINANCE & SUPER_ADMIN — verifikasi payment
 			finance := protected.Group("/admin")
 			finance.Use(middleware.RoleRequired("finance", "super_admin"))
 			{
 				finance.GET("/payments/pending", paymentHandler.GetPendingPayments)
 				finance.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
+				finance.GET("/chat/rooms", chatHandler.ListOpenRooms)
 			}
 
-			// OWNER & SUPER_ADMIN — laporan & audit
 			owner := protected.Group("/owner")
 			owner.Use(middleware.RoleRequired("owner", "super_admin"))
 			{
@@ -106,7 +116,6 @@ func Setup(
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
 			}
 
-			// SUPER_ADMIN ONLY — kelola user & role
 			superAdmin := protected.Group("/super-admin")
 			superAdmin.Use(middleware.RoleRequired("super_admin"))
 			{

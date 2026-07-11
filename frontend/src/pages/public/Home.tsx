@@ -1,5 +1,5 @@
 import { Hero } from "@/components/home/Hero"
-import { CityTicker } from "@/components/home/CityTicker"
+import { BranchTicker } from "@/components/home/BranchTicker"
 import { HowItWorks } from "@/components/home/HowItWorks"
 import { FeatureGrid } from "@/components/home/FeatureGrid"
 import { Testimonial } from "@/components/home/Testimonial"
@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <>
       <Hero />
-      <CityTicker />
+      <BranchTicker />
       <div id="cara-kerja">
         <HowItWorks />
       </div>

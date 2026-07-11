@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS idx_chat_rooms_user_open;

@@ -1,11 +1,12 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Menu, X, KeyRound } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { NotificationBell } from "@/components/NotificationBell"
+import { branches } from "@/lib/branches"
 
 const navLinks = [
-  { label: "Cari Kost", to: "/rooms" },
+  { label: "Cari Kamar", to: "/rooms" },
   { label: "Cara Kerja", to: "/#cara-kerja" },
   { label: "Bantuan", to: "/help" },
 ]
@@ -23,9 +24,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-paper/90 backdrop-blur-md border-b border-border">
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-        <Link to="/" className="flex items-center gap-2 font-heading font-medium text-xl text-ink">
-          <KeyRound size={20} className="text-primary" strokeWidth={1.75} />
-          Kost<span className="text-primary">Hub</span>
+        <Link to="/" className="font-heading font-medium text-xl text-ink">
+          KostHub
         </Link>
 
         <div className="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-wide text-text-secondary">
@@ -87,6 +87,23 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+
+          <div className="pt-3 border-t border-border">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-text-secondary mb-2">Cabang</p>
+            <div className="flex flex-wrap gap-2">
+              {branches.map((b) => (
+                <Link
+                  key={b.code}
+                  to={`/rooms?branch=${b.code}`}
+                  onClick={() => setOpen(false)}
+                  className="text-xs font-mono border border-border rounded-sm px-2.5 py-1 hover:border-primary hover:text-primary transition-colors"
+                >
+                  {b.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+
           <div className="pt-3 border-t border-border flex flex-col gap-2">
             {user ? (
               <>

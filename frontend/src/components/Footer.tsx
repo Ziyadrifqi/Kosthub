@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom"
-import { KeyRound } from "lucide-react"
+import { branches } from "@/lib/branches"
 
 const columns = [
   {
     title: "Produk",
     links: [
-      { label: "Cari Kost", to: "/rooms" },
+      { label: "Cari Kamar", to: "/rooms" },
       { label: "Cara Kerja", to: "/#cara-kerja" },
     ],
   },
@@ -35,15 +35,28 @@ const columns = [
 export function Footer() {
   return (
     <footer className="border-t border-border bg-ink text-paper">
-      <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-5 gap-8">
-        <div className="col-span-2 md:col-span-1">
-          <Link to="/" className="flex items-center gap-2 font-heading font-medium text-xl">
-            <KeyRound size={18} className="text-gold" strokeWidth={1.75} />
-            Kost<span className="text-gold">Hub</span>
+      <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-6 gap-8">
+        <div className="col-span-2 md:col-span-2">
+          <Link to="/" className="font-heading font-medium text-xl">
+            KostHub
           </Link>
-          <p className="text-sm text-paper/60 mt-3 leading-relaxed">
-            Platform booking kost terpercaya untuk kamu yang cari tempat tinggal nyaman.
+          <p className="text-sm text-paper/60 mt-3 leading-relaxed max-w-xs">
+            Satu manajemen, empat cabang. Standar kebersihan dan keamanan yang
+            sama di setiap lokasi.
           </p>
+        </div>
+
+        <div>
+          <h4 className="font-mono text-xs uppercase tracking-wide text-paper/50 mb-3">Cabang</h4>
+          <ul className="space-y-2">
+            {branches.map((b) => (
+              <li key={b.code}>
+                <Link to={`/rooms?branch=${b.code}`} className="text-sm text-paper/80 hover:text-brass transition-colors">
+                  {b.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         {columns.map((col) => (
@@ -52,7 +65,7 @@ export function Footer() {
             <ul className="space-y-2">
               {col.links.map((link) => (
                 <li key={link.to}>
-                  <Link to={link.to} className="text-sm text-paper/80 hover:text-gold transition-colors">
+                  <Link to={link.to} className="text-sm text-paper/80 hover:text-brass transition-colors">
                     {link.label}
                   </Link>
                 </li>

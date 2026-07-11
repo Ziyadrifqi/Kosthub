@@ -10,16 +10,15 @@ export function CtaBanner() {
         whileInView="visible"
         viewport={{ once: true, amount: 0.4 }}
         variants={fadeUpVariant}
-        className="max-w-4xl mx-auto bg-primary rounded-md px-8 py-16 text-center relative overflow-hidden"
+        className="max-w-4xl mx-auto bg-primary rounded-md px-8 py-16 text-center"
       >
-        <div className="absolute inset-0 bg-pegboard opacity-20 pointer-events-none" />
-        <h2 className="font-heading font-medium text-3xl md:text-4xl text-paper relative">
+        <h2 className="font-heading font-medium text-3xl md:text-4xl text-paper">
           Siap Menemukan Kost Idealmu?
         </h2>
-        <p className="text-paper/80 mt-3 relative">Daftar sekarang, gratis dan tanpa komitmen.</p>
+        <p className="text-paper/80 mt-3">Daftar sekarang, gratis dan tanpa komitmen.</p>
         <Link
           to="/register"
-          className="inline-block mt-7 font-heading font-medium bg-paper text-ink rounded-sm px-7 py-3 hover:bg-white transition-colors relative"
+          className="inline-block mt-7 font-heading font-medium bg-paper text-ink rounded-sm px-7 py-3 hover:bg-white transition-colors"
         >
           Mulai Sekarang
         </Link>
