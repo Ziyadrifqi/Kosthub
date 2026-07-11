@@ -21,12 +21,13 @@ func Setup(
 	reviewHandler *handler.ReviewHandler,
 	chatHandler *handler.ChatHandler,
 	wsHandler *handler.WSHandler,
+	contentHandler *handler.SiteContentHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
 	r.Static("/uploads", "./uploads")
 
-	// WebSocket — taruh SEBELUM middleware CORS supaya tidak ikut ke-block,
+	// WebSocket — di luar grup /api dan sebelum CORS middleware,
 	// karena WebSocket handshake tidak selalu cocok dengan CORS middleware biasa
 	r.GET("/ws/chat", wsHandler.HandleConnection)
 
@@ -43,6 +44,7 @@ func Setup(
 
 	api := r.Group("/api")
 	{
+		// ===== PUBLIK (tanpa login) =====
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", authHandler.Register)
@@ -56,13 +58,19 @@ func Setup(
 			rooms.GET("/:id/reviews", reviewHandler.GetRoomReviews)
 		}
 
+		// konten dinamis landing page — publik, dipakai sebelum & sesudah login
+		api.GET("/site-contents", contentHandler.GetPublicContents)
+
+		// ===== WAJIB LOGIN =====
 		protected := api.Group("/")
 		protected.Use(middleware.AuthRequired(cfg.JWTSecret))
 		{
 			protected.GET("/me", func(c *gin.Context) {
 				c.JSON(200, gin.H{
-					"user_id": c.MustGet("user_id"),
-					"email":   c.MustGet("email"),
+					"user_id":   c.MustGet("user_id"),
+					"email":     c.MustGet("email"),
+					"role":      c.MustGet("role"),
+					"branch_id": c.MustGet("branch_id"),
 				})
 			})
 
@@ -95,20 +103,19 @@ func Setup(
 			protected.GET("/favorites", favoriteHandler.GetMyFavorites)
 			protected.POST("/reviews", reviewHandler.CreateReview)
 
+			// ===== STAFF & SUPER_ADMIN — operasional harian =====
 			staff := protected.Group("/staff")
 			staff.Use(middleware.RoleRequired("staff", "super_admin"))
 			{
 				staff.POST("/rooms", roomHandler.CreateRoom)
+				staff.GET("/payments/pending", paymentHandler.GetPendingPayments)
+				staff.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
+				staff.GET("/chat/rooms", chatHandler.ListOpenRooms)
+				staff.GET("/site-contents", contentHandler.GetPublicContents)
+				staff.PUT("/site-contents/:key", contentHandler.UpdateContent)
 			}
 
-			finance := protected.Group("/admin")
-			finance.Use(middleware.RoleRequired("finance", "super_admin"))
-			{
-				finance.GET("/payments/pending", paymentHandler.GetPendingPayments)
-				finance.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
-				finance.GET("/chat/rooms", chatHandler.ListOpenRooms)
-			}
-
+			// ===== OWNER & SUPER_ADMIN — pengawasan =====
 			owner := protected.Group("/owner")
 			owner.Use(middleware.RoleRequired("owner", "super_admin"))
 			{
@@ -116,6 +123,7 @@ func Setup(
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
 			}
 
+			// ===== SUPER_ADMIN ONLY — kelola user & role =====
 			superAdmin := protected.Group("/super-admin")
 			superAdmin.Use(middleware.RoleRequired("super_admin"))
 			{

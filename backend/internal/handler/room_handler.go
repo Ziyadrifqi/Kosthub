@@ -73,6 +73,17 @@ func (h *RoomHandler) CreateRoom(c *gin.Context) {
 		return
 	}
 
+	role := c.MustGet("role").(string)
+
+	// staff (bukan super_admin) cuma boleh bikin kamar di cabangnya sendiri
+	if role == "staff" {
+		userBranchID := c.MustGet("branch_id")
+		if userBranchID == nil || uint(userBranchID.(float64)) != req.BranchID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "kamu hanya bisa mengelola kamar di cabangmu sendiri"})
+			return
+		}
+	}
+
 	room, err := h.roomService.CreateRoom(service.CreateRoomInput{
 		BranchID:   req.BranchID,
 		BuildingID: req.BuildingID,

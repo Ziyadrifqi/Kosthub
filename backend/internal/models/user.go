@@ -10,6 +10,8 @@ type User struct {
 	ID           uuid.UUID  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	RoleID       *uint      `json:"role_id"`
 	Role         *Role      `gorm:"foreignKey:RoleID" json:"role,omitempty"`
+	BranchID     *uint      `json:"branch_id"`
+	Branch       *Branch    `gorm:"foreignKey:BranchID" json:"branch,omitempty"`
 	Name         string     `gorm:"size:150;not null" json:"name"`
 	Email        string     `gorm:"size:150;not null;uniqueIndex" json:"email"`
 	PasswordHash string     `gorm:"size:255;not null" json:"-"`

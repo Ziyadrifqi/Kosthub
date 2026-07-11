@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS site_contents;
+
+ALTER TABLE users DROP COLUMN IF EXISTS branch_id;

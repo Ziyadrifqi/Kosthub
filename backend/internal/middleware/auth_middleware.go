@@ -8,6 +8,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+// AuthRequired memverifikasi JWT dan menyimpan identitas user (user_id, email,
+// role, branch_id) ke context supaya bisa dipakai handler & middleware berikutnya.
 func AuthRequired(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -45,10 +47,13 @@ func AuthRequired(jwtSecret string) gin.HandlerFunc {
 		c.Set("user_id", claims["user_id"])
 		c.Set("email", claims["email"])
 		c.Set("role", claims["role"])
+		c.Set("branch_id", claims["branch_id"])
 		c.Next()
 	}
 }
 
+// RoleRequired mengizinkan akses hanya untuk role yang ada di daftar allowedRoles.
+// Dipakai untuk membatasi endpoint per peran (staff, owner, super_admin, dst).
 func RoleRequired(allowedRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role, exists := c.Get("role")
@@ -56,6 +61,7 @@ func RoleRequired(allowedRoles ...string) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "access denied"})
 			return
 		}
+
 		roleStr, _ := role.(string)
 		for _, allowed := range allowedRoles {
 			if roleStr == allowed {
@@ -63,11 +69,13 @@ func RoleRequired(allowedRoles ...string) gin.HandlerFunc {
 				return
 			}
 		}
+
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "access denied"})
 	}
 }
 
-// AdminOnly tetap ada untuk backward compatibility, staff & finance & super_admin dianggap "admin-level"
+// AdminOnly adalah shortcut untuk semua role level operasional/manajerial
+// (staff, owner, super_admin) — dipakai di endpoint yang bukan milik customer biasa.
 func AdminOnly() gin.HandlerFunc {
-	return RoleRequired("staff", "finance", "super_admin")
+	return RoleRequired("staff", "owner", "super_admin")
 }

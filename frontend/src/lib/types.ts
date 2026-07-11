@@ -24,6 +24,7 @@ export interface Room {
   images?: RoomImage[]
   facilities?: Facility[]
   created_at: string
+   is_favorited?: boolean
 }
 
 export interface RoomListResponse {

@@ -14,8 +14,9 @@ import (
 )
 
 var (
-	ErrEmailAlreadyExists = errors.New("email already registered")
-	ErrInvalidCredentials = errors.New("invalid email or password")
+	ErrEmailAlreadyExists   = errors.New("email already registered")
+	ErrInvalidCredentials   = errors.New("invalid email or password")
+	ErrWrongCurrentPassword = errors.New("current password is incorrect")
 )
 
 type AuthService struct {
@@ -27,12 +28,7 @@ func NewAuthService(userRepo *repository.UserRepository, cfg *config.Config) *Au
 	return &AuthService{userRepo: userRepo, cfg: cfg}
 }
 
-func roleNameOrDefault(user *models.User) string {
-	if user.Role != nil {
-		return user.Role.Name
-	}
-	return "customer"
-}
+// ===== REGISTER =====
 
 type RegisterInput struct {
 	Name     string
@@ -74,6 +70,8 @@ func (s *AuthService) Register(input RegisterInput) (*models.User, error) {
 	return user, nil
 }
 
+// ===== LOGIN =====
+
 func (s *AuthService) Login(email, password string) (string, *models.User, error) {
 	user, err := s.userRepo.FindByEmail(email)
 	if err != nil {
@@ -92,7 +90,37 @@ func (s *AuthService) Login(email, password string) (string, *models.User, error
 	return token, user, nil
 }
 
-var ErrWrongCurrentPassword = errors.New("current password is incorrect")
+func (s *AuthService) generateToken(user *models.User) (string, error) {
+	expireHours, err := strconv.Atoi(s.cfg.JWTExpireHours)
+	if err != nil {
+		expireHours = 24
+	}
+
+	claims := jwt.MapClaims{
+		"user_id":   user.ID.String(),
+		"email":     user.Email,
+		"role":      roleNameOrDefault(user),
+		"branch_id": nil,
+		"exp":       time.Now().Add(time.Duration(expireHours) * time.Hour).Unix(),
+		"iat":       time.Now().Unix(),
+	}
+
+	if user.BranchID != nil {
+		claims["branch_id"] = *user.BranchID
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(s.cfg.JWTSecret))
+}
+
+func roleNameOrDefault(user *models.User) string {
+	if user.Role != nil {
+		return user.Role.Name
+	}
+	return "customer"
+}
+
+// ===== PROFILE =====
 
 type UpdateProfileInput struct {
 	UserID uuid.UUID
@@ -140,22 +168,4 @@ func (s *AuthService) ChangePassword(input ChangePasswordInput) error {
 	}
 
 	return s.userRepo.UpdatePassword(input.UserID, string(newHash))
-}
-
-func (s *AuthService) generateToken(user *models.User) (string, error) {
-	expireHours, err := strconv.Atoi(s.cfg.JWTExpireHours)
-	if err != nil {
-		expireHours = 24
-	}
-
-	claims := jwt.MapClaims{
-		"user_id": user.ID.String(),
-		"email":   user.Email,
-		"role":    roleNameOrDefault(user),
-		"exp":     time.Now().Add(time.Duration(expireHours) * time.Hour).Unix(),
-		"iat":     time.Now().Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(s.cfg.JWTSecret))
 }

@@ -2,7 +2,8 @@ import { useEffect } from "react"
 import { Routes, Route } from "react-router-dom"
 import { initLenis, destroyLenis } from "@/animations/lenisSetup"
 import { PublicLayout } from "@/layouts/PublicLayout"
-import { ProtectedRoute } from "@/routes/ProtectedRoute"
+import { AdminLayout } from "@/layouts/AdminLayout"
+import { ProtectedRoute, AdminRoute, RoleRoute } from "@/routes/ProtectedRoute"
 
 import Login from "@/pages/public/Login"
 import Register from "@/pages/public/Register"
@@ -16,6 +17,13 @@ import MyBookings from "@/pages/customer/MyBookings"
 import Profile from "@/pages/customer/Profile"
 import Favorites from "@/pages/customer/Favorites"
 
+import AdminDashboard from "@/pages/admin/AdminDashboard"
+import AdminPayments from "@/pages/admin/AdminPayments"
+import OwnerReports from "@/pages/admin/OwnerReports"
+import SuperAdminUsers from "@/pages/admin/SuperAdminUsers"
+import StaffRooms from "@/pages/admin/StaffRooms"
+import StaffContent from "@/pages/admin/StaffContent"
+
 function App() {
   useEffect(() => {
     initLenis()
@@ -24,6 +32,7 @@ function App() {
 
   return (
     <Routes>
+      {/* ===== ZONA PUBLIK + CUSTOMER ===== */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
@@ -37,6 +46,27 @@ function App() {
           <Route path="/my-bookings" element={<MyBookings />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/profile" element={<Profile />} />
+        </Route>
+      </Route>
+
+      {/* ===== ZONA ADMIN (layout sidebar terpisah) ===== */}
+      <Route element={<AdminRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+
+          <Route element={<RoleRoute allowedRoles={["staff", "super_admin"]} />}>
+            <Route path="/admin/payments" element={<AdminPayments />} />
+            <Route path="/admin/rooms" element={<StaffRooms />} />
+            <Route path="/admin/content" element={<StaffContent />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>
+            <Route path="/admin/reports" element={<OwnerReports />} />
+          </Route>
+
+          <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
+            <Route path="/admin/users" element={<SuperAdminUsers />} />
+          </Route>
         </Route>
       </Route>
     </Routes>

@@ -63,7 +63,15 @@ func main() {
 	chatHandler := handler.NewChatHandler(chatService)
 	wsHandler := handler.NewWSHandler(hub, chatService, cfg.JWTSecret)
 
-	r := router.Setup(cfg, authHandler, roomHandler, bookingHandler, paymentHandler, reportHandler, userHandler, notificationHandler, favoriteHandler, reviewHandler, chatHandler, wsHandler)
+	contentRepo := repository.NewSiteContentRepository(db)
+	contentService := service.NewSiteContentService(contentRepo)
+	contentHandler := handler.NewSiteContentHandler(contentService)
+
+	r := router.Setup(
+		cfg, authHandler, roomHandler, bookingHandler, paymentHandler,
+		reportHandler, userHandler, notificationHandler, favoriteHandler,
+		reviewHandler, chatHandler, wsHandler, contentHandler,
+	)
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)
