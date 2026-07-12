@@ -51,3 +51,33 @@ func (r *UserRepository) UpdatePassword(userID uuid.UUID, newHash string) error 
 		Where("id = ?", userID).
 		Update("password_hash", newHash).Error
 }
+
+func (r *UserRepository) FindAllPaginated(search string, page, limit int) ([]models.User, int64, error) {
+	var users []models.User
+	var total int64
+
+	query := r.db.Model(&models.User{}).Preload("Role").Preload("Branch")
+
+	if search != "" {
+		term := "%" + search + "%"
+		query = query.Where("name ILIKE ? OR email ILIKE ?", term, term)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+	offset := (page - 1) * limit
+
+	if err := query.Order("created_at desc").Limit(limit).Offset(offset).Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
+}

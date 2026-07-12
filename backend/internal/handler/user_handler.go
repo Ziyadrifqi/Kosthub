@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Ziyadrifqi/kosthub/backend/internal/service"
 	"github.com/gin-gonic/gin"
@@ -18,12 +19,17 @@ func NewUserHandler(userService *service.UserManagementService) *UserHandler {
 
 // GET /api/super-admin/users
 func (h *UserHandler) ListUsers(c *gin.Context) {
-	users, err := h.userService.ListAll()
+	search := c.Query("search")
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+
+	result, err := h.userService.ListAll(search, page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch users"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"users": users})
+
+	c.JSON(http.StatusOK, result)
 }
 
 // PATCH /api/super-admin/users/:id/role

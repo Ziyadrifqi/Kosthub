@@ -2,22 +2,41 @@ package service
 
 import (
 	"github.com/Ziyadrifqi/kosthub/backend/internal/models"
+	"github.com/Ziyadrifqi/kosthub/backend/internal/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type UserManagementService struct {
-	db *gorm.DB
+	db       *gorm.DB
+	userRepo *repository.UserRepository
 }
 
-func NewUserManagementService(db *gorm.DB) *UserManagementService {
-	return &UserManagementService{db: db}
+func NewUserManagementService(db *gorm.DB, userRepo *repository.UserRepository) *UserManagementService {
+	return &UserManagementService{db: db, userRepo: userRepo}
 }
 
-func (s *UserManagementService) ListAll() ([]models.User, error) {
-	var users []models.User
-	err := s.db.Preload("Role").Order("created_at desc").Find(&users).Error
-	return users, err
+type ListUsersOutput struct {
+	Users []models.User `json:"users"`
+	Total int64         `json:"total"`
+	Page  int           `json:"page"`
+	Limit int           `json:"limit"`
+}
+
+func (s *UserManagementService) ListAll(search string, page, limit int) (*ListUsersOutput, error) {
+	users, total, err := s.userRepo.FindAllPaginated(search, page, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 10
+	}
+
+	return &ListUsersOutput{Users: users, Total: total, Page: page, Limit: limit}, nil
 }
 
 func (s *UserManagementService) UpdateRoleAndBranch(userID uuid.UUID, roleName string, branchID *uint) error {

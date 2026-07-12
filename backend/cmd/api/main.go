@@ -51,7 +51,7 @@ func main() {
 	reportHandler := handler.NewReportHandler(reportService)
 
 	// User management
-	userMgmtService := service.NewUserManagementService(db)
+	userMgmtService := service.NewUserManagementService(db, userRepo)
 	userHandler := handler.NewUserHandler(userMgmtService)
 
 	// Favorites

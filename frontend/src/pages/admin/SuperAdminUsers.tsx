@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { UserX } from "lucide-react"
+import { Search, UserX } from "lucide-react"
 import { api } from "@/lib/api"
 import { branches } from "@/lib/branches"
 
@@ -12,16 +12,39 @@ interface UserRow {
   branch_id?: number
 }
 
+interface UserListResponse {
+  users: UserRow[]
+  total: number
+  page: number
+  limit: number
+}
+
 const roles = ["customer", "staff", "owner", "super_admin"]
+const LIMIT = 10
 
 export default function SuperAdminUsers() {
   const queryClient = useQueryClient()
   const [pendingBranch, setPendingBranch] = useState<Record<string, number | undefined>>({})
 
-  const { data } = useQuery({
-    queryKey: ["all-users"],
+  const [page, setPage] = useState(1)
+  const [searchInput, setSearchInput] = useState("")
+  const [debouncedSearch, setDebouncedSearch] = useState("")
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchInput), 400)
+    return () => clearTimeout(timer)
+  }, [searchInput])
+
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch])
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["all-users", page, debouncedSearch],
     queryFn: async () => {
-      const res = await api.get<{ users: UserRow[] }>("/super-admin/users")
+      const res = await api.get<UserListResponse>("/super-admin/users", {
+        params: { page, limit: LIMIT, search: debouncedSearch || undefined },
+      })
       return res.data
     },
   })
@@ -42,7 +65,6 @@ export default function SuperAdminUsers() {
 
   const handleRoleChange = (user: UserRow, newRole: string) => {
     if (newRole === "staff") {
-      // jangan langsung submit — tunggu admin pilih cabang dulu
       setPendingBranch({ ...pendingBranch, [user.id]: user.branch_id })
       return
     }
@@ -66,9 +88,24 @@ export default function SuperAdminUsers() {
     }
   }
 
+  const totalPages = data ? Math.ceil(data.total / LIMIT) : 1
+
   return (
     <div className="p-8">
-      <h1 className="font-heading font-extrabold text-2xl text-text mb-8">Kelola User & Role</h1>
+      <h1 className="font-heading font-extrabold text-2xl text-text mb-1">Kelola User & Role</h1>
+      <p className="text-text-secondary mb-6">
+        {data ? `${data.total} user terdaftar` : "Memuat..."}
+      </p>
+
+      <div className="relative mb-6 max-w-md">
+        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
+        <input
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Cari nama atau email..."
+          className="w-full border border-border rounded-lg pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+        />
+      </div>
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
@@ -82,6 +119,14 @@ export default function SuperAdminUsers() {
             </tr>
           </thead>
           <tbody>
+            {isLoading && (
+              <tr><td colSpan={5} className="text-center text-text-secondary py-8">Memuat data...</td></tr>
+            )}
+
+            {data?.users.length === 0 && (
+              <tr><td colSpan={5} className="text-center text-text-secondary py-8">Tidak ada user yang cocok.</td></tr>
+            )}
+
             {data?.users.map((u) => {
               const currentRole = u.role?.name ?? "customer"
               const isChoosingBranch = currentRole !== "staff" && pendingBranch[u.id] !== undefined
@@ -144,6 +189,28 @@ export default function SuperAdminUsers() {
           </tbody>
         </table>
       </div>
+
+      {data && totalPages > 1 && (
+        <div className="flex justify-center items-center gap-3 mt-6">
+          <button
+            disabled={page <= 1}
+            onClick={() => setPage((p) => p - 1)}
+            className="font-heading font-medium text-sm border border-border rounded-lg px-4 py-2 disabled:opacity-40 hover:bg-section transition-colors"
+          >
+            Sebelumnya
+          </button>
+          <span className="text-sm text-text-secondary">
+            Halaman {page} dari {totalPages}
+          </span>
+          <button
+            disabled={page >= totalPages}
+            onClick={() => setPage((p) => p + 1)}
+            className="font-heading font-medium text-sm border border-border rounded-lg px-4 py-2 disabled:opacity-40 hover:bg-section transition-colors"
+          >
+            Berikutnya
+          </button>
+        </div>
+      )}
     </div>
   )
 }
