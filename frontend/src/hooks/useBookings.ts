@@ -3,10 +3,15 @@ import { api } from "@/lib/api"
 import type { Booking } from "@/lib/types"
 
 export function useCreateBooking() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: { room_id: number; check_in: string; duration_months: number }) => {
       const res = await api.post<Booking>("/bookings", payload)
       return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rooms"] })
+      queryClient.invalidateQueries({ queryKey: ["room"] })
     },
   })
 }

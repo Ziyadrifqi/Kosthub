@@ -19,6 +19,7 @@ export function useRooms(filters: RoomFilters = {}) {
       const res = await api.get<RoomListResponse>("/rooms", { params: filters })
       return res.data
     },
+    staleTime: 30 * 1000, // data dianggap basi setelah 30 detik, auto-refetch kalau lebih lama
   })
 }
 
@@ -32,3 +33,4 @@ export function useRoomDetail(id: string | number) {
     enabled: !!id,
   })
 }
+
