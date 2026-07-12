@@ -22,7 +22,8 @@ func main() {
 
 	// Auth
 	userRepo := repository.NewUserRepository(db)
-	authService := service.NewAuthService(userRepo, cfg)
+	roleRepo := repository.NewRoleRepository(db)
+	authService := service.NewAuthService(userRepo, roleRepo, cfg)
 	authHandler := handler.NewAuthHandler(authService)
 
 	// Rooms

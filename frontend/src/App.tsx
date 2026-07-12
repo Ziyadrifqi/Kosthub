@@ -56,7 +56,7 @@ function App() {
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
 
-          <Route element={<RoleRoute allowedRoles={["staff", "super_admin"]} />}>
+          <Route element={<RoleRoute allowedRoles={["staff"]} />}>
   <Route path="/admin/payments" element={<AdminPayments />} />
   <Route path="/admin/rooms" element={<StaffRooms />} />
   <Route path="/admin/content" element={<StaffContent />} />

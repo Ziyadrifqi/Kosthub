@@ -21,11 +21,12 @@ var (
 
 type AuthService struct {
 	userRepo *repository.UserRepository
+	roleRepo *repository.RoleRepository
 	cfg      *config.Config
 }
 
-func NewAuthService(userRepo *repository.UserRepository, cfg *config.Config) *AuthService {
-	return &AuthService{userRepo: userRepo, cfg: cfg}
+func NewAuthService(userRepo *repository.UserRepository, roleRepo *repository.RoleRepository, cfg *config.Config) *AuthService {
+	return &AuthService{userRepo: userRepo, roleRepo: roleRepo, cfg: cfg}
 }
 
 // ===== REGISTER =====
@@ -62,6 +63,14 @@ func (s *AuthService) Register(input RegisterInput) (*models.User, error) {
 		PasswordHash: string(hashedPassword),
 		Phone:        phonePtr,
 	}
+
+	// assign role "customer" secara eksplisit, bukan cuma fallback di kode
+	customerRole, err := s.roleRepo.FindByName("customer")
+	if err == nil {
+		user.RoleID = &customerRole.ID
+	}
+	// kalau role "customer" belum ada di tabel roles, user tetap dibuat
+	// dengan role_id NULL — tidak fatal, tapi sebaiknya seed role dulu (lihat langkah di bawah)
 
 	if err := s.userRepo.Create(user); err != nil {
 		return nil, err

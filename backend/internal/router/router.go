@@ -105,9 +105,9 @@ func Setup(
 			protected.GET("/favorites", favoriteHandler.GetMyFavorites)
 			protected.POST("/reviews", reviewHandler.CreateReview)
 
-			// ===== STAFF & SUPER_ADMIN — operasional harian =====
+			// ===== STAFF ONLY — operasional harian =====
 			staff := protected.Group("/staff")
-			staff.Use(middleware.RoleRequired("staff", "super_admin"))
+			staff.Use(middleware.RoleRequired("staff"))
 			{
 				staff.POST("/rooms", roomHandler.CreateRoom)
 				staff.PATCH("/rooms/:id", roomHandler.UpdateRoom)
@@ -132,6 +132,7 @@ func Setup(
 			superAdmin.Use(middleware.RoleRequired("super_admin"))
 			{
 				superAdmin.GET("/users", userHandler.ListUsers)
+				superAdmin.DELETE("/users/:id", userHandler.Deactivate)
 				superAdmin.PATCH("/users/:id/role", userHandler.UpdateRole)
 				superAdmin.POST("/buildings", buildingHandler.Create)
 				superAdmin.PATCH("/buildings/:id", buildingHandler.Update)

@@ -26,11 +26,12 @@ func (h *UserHandler) ListUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"users": users})
 }
 
+// PATCH /api/super-admin/users/:id/role
 type updateRoleRequest struct {
 	RoleName string `json:"role_name" binding:"required"`
+	BranchID *uint  `json:"branch_id"`
 }
 
-// PATCH /api/super-admin/users/:id/role
 func (h *UserHandler) UpdateRole(c *gin.Context) {
 	userID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
@@ -44,10 +45,25 @@ func (h *UserHandler) UpdateRole(c *gin.Context) {
 		return
 	}
 
-	if err := h.userService.UpdateRole(userID, req.RoleName); err != nil {
+	if err := h.userService.UpdateRoleAndBranch(userID, req.RoleName, req.BranchID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update role"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "role updated"})
+}
+
+func (h *UserHandler) Deactivate(c *gin.Context) {
+	userID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user id"})
+		return
+	}
+
+	if err := h.userService.Deactivate(userID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to deactivate user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "user deactivated"})
 }
