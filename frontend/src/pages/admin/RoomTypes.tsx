@@ -18,16 +18,16 @@ export default function RoomTypes() {
   }
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="font-heading font-extrabold text-2xl text-text">Tipe Kamar</h1>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 font-heading font-medium text-sm bg-primary hover:bg-primary-hover text-white rounded-lg px-4 py-2 transition-colors"
-        >
-          <Plus size={16} /> Tambah Tipe
-        </button>
-      </div>
+<div className="p-4 sm:p-8">
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-text">Tipe Kamar</h1>
+    <button
+      onClick={() => setShowForm(!showForm)}
+      className="flex items-center justify-center gap-2 font-heading font-medium text-sm bg-primary hover:bg-primary-hover text-white rounded-lg px-4 py-2 transition-colors w-full sm:w-auto"
+    >
+      <Plus size={16} /> Tambah Tipe
+    </button>
+  </div>
 
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 mb-6 space-y-4 max-w-md">
@@ -40,7 +40,7 @@ export default function RoomTypes() {
         </form>
       )}
 
-      <div className="grid sm:grid-cols-2 gap-4">
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {types?.map((t) => (
           <div key={t.id} className="bg-card border border-border rounded-2xl p-5">
             <p className="font-heading font-semibold text-text">{t.name}</p>

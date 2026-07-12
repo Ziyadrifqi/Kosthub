@@ -91,11 +91,12 @@ export default function SuperAdminUsers() {
   const totalPages = data ? Math.ceil(data.total / LIMIT) : 1
 
   return (
-    <div className="p-8">
-      <h1 className="font-heading font-extrabold text-2xl text-text mb-1">Kelola User & Role</h1>
-      <p className="text-text-secondary mb-6">
-        {data ? `${data.total} user terdaftar` : "Memuat..."}
-      </p>
+  <div className="p-4 sm:p-8">
+  <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-text mb-1">Kelola User & Role</h1>
+  <p className="text-text-secondary mb-6">
+    {data ? `${data.total} user terdaftar` : "Memuat..."}
+  </p>
+
 
       <div className="relative mb-6 max-w-md">
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
@@ -107,8 +108,8 @@ export default function SuperAdminUsers() {
         />
       </div>
 
-      <div className="bg-card border border-border rounded-2xl overflow-hidden">
-        <table className="w-full text-sm">
+     <div className="bg-card border border-border rounded-2xl overflow-x-auto">
+    <table className="w-full text-sm min-w-[700px]">
           <thead className="bg-section text-text-secondary font-heading font-semibold">
             <tr>
               <th className="text-left px-5 py-3">Nama</th>
@@ -190,8 +191,8 @@ export default function SuperAdminUsers() {
         </table>
       </div>
 
-      {data && totalPages > 1 && (
-        <div className="flex justify-center items-center gap-3 mt-6">
+     {data && totalPages > 1 && (
+  <div className="flex flex-wrap justify-center items-center gap-3 mt-6">
           <button
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}

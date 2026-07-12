@@ -39,11 +39,11 @@ export default function StaffContent() {
   })
 
   return (
-    <div className="p-8">
-      <h1 className="font-heading font-extrabold text-2xl text-text mb-1">Kelola Konten Website</h1>
-      <p className="text-text-secondary mb-8">Perubahan langsung tampil di halaman utama tanpa perlu deploy ulang.</p>
+   <div className="p-4 sm:p-8">
+  <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-text mb-1">Kelola Konten Website</h1>
+  <p className="text-text-secondary mb-6 sm:mb-8">Perubahan langsung tampil di halaman utama. </p>
 
-      <div className="space-y-5 max-w-2xl">
+  <div className="space-y-5 max-w-2xl">
         {editableKeys.map((item) => (
           <div key={item.key} className="bg-card border border-border rounded-2xl p-5">
             <label className="block text-sm font-heading font-medium text-text mb-2">{item.label}</label>

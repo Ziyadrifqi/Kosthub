@@ -14,9 +14,9 @@ export default function OwnerReports() {
   ]
 
   return (
-    <div className="p-8">
-      <h1 className="font-heading font-extrabold text-2xl text-text mb-8">Laporan Bisnis</h1>
-      <div className="grid sm:grid-cols-3 gap-4">
+   <div className="p-4 sm:p-8">
+  <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-text mb-6 sm:mb-8">Laporan Bisnis</h1>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cards.map((c) => (
           <div key={c.label} className="bg-card border border-border rounded-2xl p-6">
             <p className="text-sm text-text-secondary">{c.label}</p>

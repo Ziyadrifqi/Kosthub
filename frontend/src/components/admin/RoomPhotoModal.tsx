@@ -19,12 +19,12 @@ export function RoomPhotoModal({ roomId, roomNumber, onClose }: { roomId: number
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6">
-      <div className="bg-card rounded-2xl p-6 w-full max-w-lg relative max-h-[85vh] overflow-y-auto">
+   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4 sm:px-6">
+  <div className="bg-card rounded-2xl p-5 sm:p-6 w-full max-w-lg relative max-h-[85vh] overflow-y-auto">
         <button onClick={onClose} className="absolute top-4 right-4 text-text-secondary hover:text-text">
           <X size={20} />
         </button>
-        <h3 className="font-heading font-bold text-lg text-text mb-1">Kelola Foto</h3>
+          <h3 className="font-heading font-bold text-lg text-text mb-1 pr-6">Kelola Foto</h3>
         <p className="text-sm text-text-secondary mb-4">Kamar {roomNumber}</p>
 
         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
@@ -45,8 +45,8 @@ export function RoomPhotoModal({ roomId, roomNumber, onClose }: { roomId: number
 
         {isLoading && <p className="text-center text-text-secondary text-sm mt-6">Memuat foto...</p>}
 
-        {images && images.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 mt-5">
+      {images && images.length > 0 && (
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-5">
             {images.map((img) => (
               <div key={img.id} className="relative rounded-lg overflow-hidden border border-border group">
                 <img src={`${apiOrigin}${img.image_url}`} alt="" className="w-full h-32 object-cover" />
