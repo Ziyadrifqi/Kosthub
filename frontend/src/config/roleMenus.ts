@@ -1,4 +1,14 @@
-import { LayoutDashboard, Wallet, DoorOpen, BarChart3, Users, FileClock, FileText } from "lucide-react"
+import {
+  LayoutDashboard,
+  Wallet,
+  DoorOpen,
+  BarChart3,
+  Users,
+  FileClock,
+  FileText,
+  Building2,
+  Layers,
+} from "lucide-react"
 
 export interface MenuItem {
   label: string
@@ -16,6 +26,8 @@ export const roleMenus: Record<string, MenuItem[]> = {
   staff: [
     { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
     { label: "Kelola Kamar", to: "/admin/rooms", icon: DoorOpen },
+    { label: "Kelola Gedung", to: "/admin/buildings", icon: Building2 },
+    { label: "Tipe Kamar", to: "/admin/room-types", icon: Layers },
     { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
     { label: "Kelola Konten", to: "/admin/content", icon: FileText },
   ],
@@ -27,6 +39,8 @@ export const roleMenus: Record<string, MenuItem[]> = {
   super_admin: [
     { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
     { label: "Kelola Kamar", to: "/admin/rooms", icon: DoorOpen },
+    { label: "Kelola Gedung", to: "/admin/buildings", icon: Building2 },
+    { label: "Tipe Kamar", to: "/admin/room-types", icon: Layers },
     { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
     { label: "Kelola Konten", to: "/admin/content", icon: FileText },
     { label: "Laporan Revenue", to: "/admin/reports", icon: BarChart3 },

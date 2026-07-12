@@ -23,6 +23,8 @@ import OwnerReports from "@/pages/admin/OwnerReports"
 import SuperAdminUsers from "@/pages/admin/SuperAdminUsers"
 import StaffRooms from "@/pages/admin/StaffRooms"
 import StaffContent from "@/pages/admin/StaffContent"
+import StaffBuildings from "@/pages/admin/StaffBuildings"
+import RoomTypes from "@/pages/admin/RoomTypes"
 
 function App() {
   useEffect(() => {
@@ -58,6 +60,8 @@ function App() {
             <Route path="/admin/payments" element={<AdminPayments />} />
             <Route path="/admin/rooms" element={<StaffRooms />} />
             <Route path="/admin/content" element={<StaffContent />} />
+            <Route path="/admin/buildings" element={<StaffBuildings />} />
+<Route path="/admin/room-types" element={<RoomTypes />} />
           </Route>
 
           <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>

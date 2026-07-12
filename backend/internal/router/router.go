@@ -22,13 +22,13 @@ func Setup(
 	chatHandler *handler.ChatHandler,
 	wsHandler *handler.WSHandler,
 	contentHandler *handler.SiteContentHandler,
+	buildingHandler *handler.BuildingHandler,
+	roomTypeHandler *handler.RoomTypeHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
 	r.Static("/uploads", "./uploads")
 
-	// WebSocket — di luar grup /api dan sebelum CORS middleware,
-	// karena WebSocket handshake tidak selalu cocok dengan CORS middleware biasa
 	r.GET("/ws/chat", wsHandler.HandleConnection)
 
 	r.Use(cors.New(cors.Config{
@@ -44,7 +44,7 @@ func Setup(
 
 	api := r.Group("/api")
 	{
-		// ===== PUBLIK (tanpa login) =====
+		// ===== PUBLIK =====
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", authHandler.Register)
@@ -58,8 +58,9 @@ func Setup(
 			rooms.GET("/:id/reviews", reviewHandler.GetRoomReviews)
 		}
 
-		// konten dinamis landing page — publik, dipakai sebelum & sesudah login
 		api.GET("/site-contents", contentHandler.GetPublicContents)
+		api.GET("/buildings", buildingHandler.List)
+		api.GET("/room-types", roomTypeHandler.List)
 
 		// ===== WAJIB LOGIN =====
 		protected := api.Group("/")
@@ -103,11 +104,13 @@ func Setup(
 			protected.GET("/favorites", favoriteHandler.GetMyFavorites)
 			protected.POST("/reviews", reviewHandler.CreateReview)
 
-			// ===== STAFF & SUPER_ADMIN — operasional harian =====
+			// ===== STAFF & SUPER_ADMIN =====
 			staff := protected.Group("/staff")
 			staff.Use(middleware.RoleRequired("staff", "super_admin"))
 			{
 				staff.POST("/rooms", roomHandler.CreateRoom)
+				staff.POST("/buildings", buildingHandler.Create)
+				staff.POST("/room-types", roomTypeHandler.Create)
 				staff.GET("/payments/pending", paymentHandler.GetPendingPayments)
 				staff.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
 				staff.GET("/chat/rooms", chatHandler.ListOpenRooms)
@@ -115,7 +118,7 @@ func Setup(
 				staff.PUT("/site-contents/:key", contentHandler.UpdateContent)
 			}
 
-			// ===== OWNER & SUPER_ADMIN — pengawasan =====
+			// ===== OWNER & SUPER_ADMIN =====
 			owner := protected.Group("/owner")
 			owner.Use(middleware.RoleRequired("owner", "super_admin"))
 			{
@@ -123,7 +126,7 @@ func Setup(
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
 			}
 
-			// ===== SUPER_ADMIN ONLY — kelola user & role =====
+			// ===== SUPER_ADMIN ONLY =====
 			superAdmin := protected.Group("/super-admin")
 			superAdmin.Use(middleware.RoleRequired("super_admin"))
 			{

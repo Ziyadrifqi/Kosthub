@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
 import { useRooms } from "@/hooks/useRooms"
+import { useBuildings, useRoomTypes } from "@/hooks/useBuildingsAndTypes"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/authStore"
 import { branches } from "@/lib/branches"
@@ -14,7 +15,6 @@ export default function StaffRooms() {
   const myBranchId = user?.branch_id ?? undefined
   const myBranch = branches.find((b) => b.id === myBranchId)
 
-  const { data } = useRooms({ page: 1, limit: 50, branch_id: isSuperAdmin ? undefined : myBranchId })
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
 
@@ -25,6 +25,13 @@ export default function StaffRooms() {
     room_number: "",
     price: "",
   })
+
+  // cabang yang sedang aktif dipakai buat filter list & dropdown gedung
+  const activeBranchId = isSuperAdmin ? Number(form.branch_id) || undefined : myBranchId
+
+  const { data } = useRooms({ page: 1, limit: 50, branch_id: isSuperAdmin ? undefined : myBranchId })
+  const { data: buildings } = useBuildings(activeBranchId)
+  const { data: roomTypes } = useRoomTypes()
 
   const createRoom = useMutation({
     mutationFn: async () => {
@@ -39,9 +46,20 @@ export default function StaffRooms() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rooms"] })
       setShowForm(false)
-      setForm({ branch_id: isSuperAdmin ? "" : String(myBranchId ?? ""), building_id: "", room_type_id: "", room_number: "", price: "" })
+      setForm({
+        branch_id: isSuperAdmin ? "" : String(myBranchId ?? ""),
+        building_id: "",
+        room_type_id: "",
+        room_number: "",
+        price: "",
+      })
     },
   })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    createRoom.mutate()
+  }
 
   return (
     <div className="p-8">
@@ -62,14 +80,11 @@ export default function StaffRooms() {
       )}
 
       {showForm && (
-        <form
-          onSubmit={(e) => { e.preventDefault(); createRoom.mutate() }}
-          className="bg-card border border-border rounded-2xl p-6 mb-6 grid sm:grid-cols-2 gap-4"
-        >
+        <form onSubmit={handleSubmit} className="bg-card border border-border rounded-2xl p-6 mb-6 grid sm:grid-cols-2 gap-4">
           {isSuperAdmin ? (
             <select
               value={form.branch_id}
-              onChange={(e) => setForm({ ...form, branch_id: e.target.value })}
+              onChange={(e) => setForm({ ...form, branch_id: e.target.value, building_id: "" })}
               required
               className="border border-border rounded-lg px-3 py-2 text-sm"
             >
@@ -86,16 +101,59 @@ export default function StaffRooms() {
             />
           )}
 
-          <input placeholder="ID Gedung" value={form.building_id} onChange={(e) => setForm({ ...form, building_id: e.target.value })} className="border border-border rounded-lg px-3 py-2 text-sm" required />
-          <input placeholder="ID Tipe Kamar" value={form.room_type_id} onChange={(e) => setForm({ ...form, room_type_id: e.target.value })} className="border border-border rounded-lg px-3 py-2 text-sm" required />
-          <input placeholder="Nomor Kamar (mis. A101)" value={form.room_number} onChange={(e) => setForm({ ...form, room_number: e.target.value })} className="border border-border rounded-lg px-3 py-2 text-sm" required />
-          <input placeholder="Harga per bulan" type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} className="border border-border rounded-lg px-3 py-2 text-sm" required />
+          <select
+            value={form.building_id}
+            onChange={(e) => setForm({ ...form, building_id: e.target.value })}
+            required
+            disabled={!activeBranchId}
+            className="border border-border rounded-lg px-3 py-2 text-sm disabled:bg-section disabled:cursor-not-allowed"
+          >
+            <option value="">{activeBranchId ? "Pilih Gedung" : "Pilih cabang dulu"}</option>
+            {buildings?.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
+            ))}
+          </select>
+
+          <select
+            value={form.room_type_id}
+            onChange={(e) => setForm({ ...form, room_type_id: e.target.value })}
+            required
+            className="border border-border rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">Pilih Tipe Kamar</option>
+            {roomTypes?.map((t) => (
+              <option key={t.id} value={t.id}>{t.name}</option>
+            ))}
+          </select>
+
+          <input
+            placeholder="Nomor Kamar (mis. A101)"
+            value={form.room_number}
+            onChange={(e) => setForm({ ...form, room_number: e.target.value })}
+            required
+            className="border border-border rounded-lg px-3 py-2 text-sm"
+          />
+
+          <input
+            type="number"
+            placeholder="Harga per bulan"
+            value={form.price}
+            onChange={(e) => setForm({ ...form, price: e.target.value })}
+            required
+            className="border border-border rounded-lg px-3 py-2 text-sm"
+          />
 
           {createRoom.isError && (
-            <p className="text-error text-xs sm:col-span-2">Gagal menambah kamar. Cek kembali data yang diisi.</p>
+            <p className="text-error text-xs sm:col-span-2">
+              Gagal menambah kamar. Cek kembali data yang diisi, atau pastikan gedung/tipe kamar sudah dibuat.
+            </p>
           )}
 
-          <button type="submit" disabled={createRoom.isPending} className="sm:col-span-2 font-heading font-medium text-sm bg-primary text-white rounded-lg py-2.5 disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={createRoom.isPending}
+            className="sm:col-span-2 font-heading font-medium text-sm bg-primary text-white rounded-lg py-2.5 disabled:opacity-60"
+          >
             {createRoom.isPending ? "Menyimpan..." : "Simpan Kamar"}
           </button>
         </form>
@@ -118,7 +176,11 @@ export default function StaffRooms() {
                 <td className="px-5 py-3 text-text-secondary">{r.branch?.name}</td>
                 <td className="px-5 py-3 text-text-secondary">Rp{r.price.toLocaleString("id-ID")}</td>
                 <td className="px-5 py-3">
-                  <span className={`text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${r.status === "available" ? "bg-primary/10 text-primary" : "bg-section text-text-secondary"}`}>
+                  <span
+                    className={`text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${
+                      r.status === "available" ? "bg-primary/10 text-primary" : "bg-section text-text-secondary"
+                    }`}
+                  >
                     {r.status}
                   </span>
                 </td>
@@ -126,7 +188,9 @@ export default function StaffRooms() {
             ))}
             {data?.rooms.length === 0 && (
               <tr>
-                <td colSpan={4} className="text-center text-text-secondary py-8">Belum ada kamar di cabang ini.</td>
+                <td colSpan={4} className="text-center text-text-secondary py-8">
+                  Belum ada kamar di cabang ini.
+                </td>
               </tr>
             )}
           </tbody>

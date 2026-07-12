@@ -30,48 +30,79 @@ func main() {
 	roomService := service.NewRoomService(roomRepo)
 	roomHandler := handler.NewRoomHandler(roomService)
 
-	// Bookings
+	// Notifications
 	notifRepo := repository.NewNotificationRepository(db)
 	notifService := service.NewNotificationService(notifRepo)
 	notificationHandler := handler.NewNotificationHandler(notifService)
 
+	// Bookings
 	bookingRepo := repository.NewBookingRepository(db)
 	bookingService := service.NewBookingService(bookingRepo, roomRepo, notifService)
 	bookingHandler := handler.NewBookingHandler(bookingService)
 
+	// Payments
 	paymentRepo := repository.NewPaymentRepository(db)
 	paymentService := service.NewPaymentService(paymentRepo, bookingRepo, notifService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
+	// Reports
 	reportService := service.NewReportService(db)
 	reportHandler := handler.NewReportHandler(reportService)
 
+	// User management
 	userMgmtService := service.NewUserManagementService(db)
 	userHandler := handler.NewUserHandler(userMgmtService)
 
+	// Favorites
 	favRepo := repository.NewFavoriteRepository(db)
 	favService := service.NewFavoriteService(favRepo)
 	favoriteHandler := handler.NewFavoriteHandler(favService)
 
+	// Reviews
 	reviewRepo := repository.NewReviewRepository(db)
 	reviewService := service.NewReviewService(reviewRepo)
 	reviewHandler := handler.NewReviewHandler(reviewService)
 
+	// Chat
 	hub := ws.NewHub()
 	chatRepo := repository.NewChatRepository(db)
 	chatService := service.NewChatService(chatRepo)
 	chatHandler := handler.NewChatHandler(chatService)
 	wsHandler := handler.NewWSHandler(hub, chatService, cfg.JWTSecret)
 
+	// Site Content (CMS)
 	contentRepo := repository.NewSiteContentRepository(db)
 	contentService := service.NewSiteContentService(contentRepo)
 	contentHandler := handler.NewSiteContentHandler(contentService)
 
+	// Buildings
+	buildingRepo := repository.NewBuildingRepository(db)
+	buildingService := service.NewBuildingService(buildingRepo)
+	buildingHandler := handler.NewBuildingHandler(buildingService)
+
+	// Room Types
+	roomTypeRepo := repository.NewRoomTypeRepository(db)
+	roomTypeService := service.NewRoomTypeService(roomTypeRepo)
+	roomTypeHandler := handler.NewRoomTypeHandler(roomTypeService)
+
 	r := router.Setup(
-		cfg, authHandler, roomHandler, bookingHandler, paymentHandler,
-		reportHandler, userHandler, notificationHandler, favoriteHandler,
-		reviewHandler, chatHandler, wsHandler, contentHandler,
+		cfg,
+		authHandler,
+		roomHandler,
+		bookingHandler,
+		paymentHandler,
+		reportHandler,
+		userHandler,
+		notificationHandler,
+		favoriteHandler,
+		reviewHandler,
+		chatHandler,
+		wsHandler,
+		contentHandler,
+		buildingHandler,
+		roomTypeHandler,
 	)
+
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)
