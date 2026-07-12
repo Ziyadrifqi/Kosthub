@@ -134,6 +134,8 @@ func Setup(
 				superAdmin.GET("/users", userHandler.ListUsers)
 				superAdmin.PATCH("/users/:id/role", userHandler.UpdateRole)
 				superAdmin.POST("/buildings", buildingHandler.Create)
+				superAdmin.PATCH("/buildings/:id", buildingHandler.Update)
+				superAdmin.DELETE("/buildings/:id", buildingHandler.Delete)
 				superAdmin.POST("/room-types", roomTypeHandler.Create)
 			}
 		}

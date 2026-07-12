@@ -4,8 +4,10 @@ import { api } from "@/lib/api"
 export interface Building {
   id: number
   branch_id: number
+  branch?: { id: number; name: string; city: string }
   name: string
   total_floor: number
+  room_count: number
 }
 
 export interface RoomType {
@@ -15,16 +17,16 @@ export interface RoomType {
   base_price: number
 }
 
-export function useBuildings(branchId?: number) {
+export function useBuildings(branchId?: number, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: ["buildings", branchId],
+    queryKey: ["buildings", branchId ?? "all"],
     queryFn: async () => {
       const res = await api.get<{ buildings: Building[] }>("/buildings", {
         params: branchId ? { branch_id: branchId } : {},
       })
       return res.data.buildings
     },
-    enabled: !!branchId,
+    enabled: options?.enabled ?? true, // default: tetap fetch meski branchId kosong (artinya "semua cabang")
   })
 }
 
@@ -48,7 +50,26 @@ export function useCreateBuilding() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buildings"] }),
   })
 }
+export function useUpdateBuilding() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, name, total_floor }: { id: number; name: string; total_floor: number }) => {
+      const res = await api.patch(`/super-admin/buildings/${id}`, { name, total_floor })
+      return res.data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buildings"] }),
+  })
+}
 
+export function useDeleteBuilding() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await api.delete(`/super-admin/buildings/${id}`)
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buildings"] }),
+  })
+}
 export function useCreateRoomType() {
   const queryClient = useQueryClient()
   return useMutation({

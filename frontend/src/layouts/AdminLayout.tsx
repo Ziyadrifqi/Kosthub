@@ -1,12 +1,15 @@
+import { useState } from "react"
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
 import { LogOut } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { roleMenus, roleThemes } from "@/config/roleMenus"
+import { ConfirmModal } from "@/components/ConfirmModal"
 
 export function AdminLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const roleName = user?.role?.name ?? "staff"
   const menu = roleMenus[roleName] ?? []
@@ -15,6 +18,7 @@ export function AdminLayout() {
   const handleLogout = () => {
     logout()
     navigate("/")
+    setShowLogoutConfirm(false)
   }
 
   return (
@@ -52,7 +56,7 @@ export function AdminLayout() {
             <p className="text-xs text-text-secondary">{user?.email}</p>
           </div>
           <button
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-heading font-medium text-error hover:bg-error/10 transition-colors w-full"
           >
             <LogOut size={18} /> Keluar
@@ -63,6 +67,16 @@ export function AdminLayout() {
       <main className="flex-1 overflow-y-auto">
         <Outlet />
       </main>
+
+      <ConfirmModal
+        open={showLogoutConfirm}
+        title="Keluar dari akun?"
+        message="Kamu yakin mau keluar dari dashboard? Sesi kamu akan diakhiri."
+        confirmLabel="Ya, Keluar"
+        cancelLabel="Batal"
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </div>
   )
 }

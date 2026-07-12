@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom"
 import { Menu, X } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { NotificationBell } from "@/components/NotificationBell"
+import { ConfirmModal } from "@/components/ConfirmModal"
 import { branches } from "@/lib/branches"
 
 const navLinks = [
@@ -15,10 +16,13 @@ export function Navbar() {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
   const handleLogout = () => {
     logout()
     navigate("/")
+    setShowLogoutConfirm(false)
+    setOpen(false)
   }
 
   return (
@@ -49,7 +53,7 @@ export function Navbar() {
               <NotificationBell />
               <span className="text-sm text-text-secondary">Hi, {user.name.split(" ")[0]}</span>
               <button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 className="font-heading font-medium text-sm border border-border rounded-sm px-4 py-2 hover:bg-section transition-colors"
               >
                 Keluar
@@ -110,7 +114,7 @@ export function Navbar() {
                 <Link to="/my-bookings" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Booking Saya</Link>
                 <Link to="/favorites" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Favorit</Link>
                 <Link to="/profile" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Profil</Link>
-                <button onClick={handleLogout} className="font-heading font-medium text-sm text-left py-1.5">
+                <button onClick={() => setShowLogoutConfirm(true)} className="font-heading font-medium text-sm text-left py-1.5">
                   Keluar
                 </button>
               </>
@@ -129,6 +133,16 @@ export function Navbar() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={showLogoutConfirm}
+        title="Keluar dari akun?"
+        message="Kamu yakin mau keluar? Kamu perlu login lagi untuk mengakses akun ini."
+        confirmLabel="Ya, Keluar"
+        cancelLabel="Batal"
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </header>
   )
 }
