@@ -29,6 +29,7 @@ func Setup(
 
 	r.Static("/uploads", "./uploads")
 
+	// WebSocket — di luar /api dan sebelum CORS middleware
 	r.GET("/ws/chat", wsHandler.HandleConnection)
 
 	r.Use(cors.New(cors.Config{
@@ -44,7 +45,7 @@ func Setup(
 
 	api := r.Group("/api")
 	{
-		// ===== PUBLIK =====
+		// ===== PUBLIK (tanpa login) =====
 		auth := api.Group("/auth")
 		{
 			auth.POST("/register", authHandler.Register)
@@ -104,13 +105,13 @@ func Setup(
 			protected.GET("/favorites", favoriteHandler.GetMyFavorites)
 			protected.POST("/reviews", reviewHandler.CreateReview)
 
-			// ===== STAFF & SUPER_ADMIN =====
+			// ===== STAFF & SUPER_ADMIN — operasional harian =====
 			staff := protected.Group("/staff")
 			staff.Use(middleware.RoleRequired("staff", "super_admin"))
 			{
 				staff.POST("/rooms", roomHandler.CreateRoom)
-				staff.POST("/buildings", buildingHandler.Create)
-				staff.POST("/room-types", roomTypeHandler.Create)
+				staff.PATCH("/rooms/:id", roomHandler.UpdateRoom)
+				staff.DELETE("/rooms/:id", roomHandler.DeleteRoom)
 				staff.GET("/payments/pending", paymentHandler.GetPendingPayments)
 				staff.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
 				staff.GET("/chat/rooms", chatHandler.ListOpenRooms)
@@ -118,7 +119,7 @@ func Setup(
 				staff.PUT("/site-contents/:key", contentHandler.UpdateContent)
 			}
 
-			// ===== OWNER & SUPER_ADMIN =====
+			// ===== OWNER & SUPER_ADMIN — pengawasan =====
 			owner := protected.Group("/owner")
 			owner.Use(middleware.RoleRequired("owner", "super_admin"))
 			{
@@ -126,12 +127,14 @@ func Setup(
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
 			}
 
-			// ===== SUPER_ADMIN ONLY =====
+			// ===== SUPER_ADMIN ONLY — kelola user, gedung, tipe kamar =====
 			superAdmin := protected.Group("/super-admin")
 			superAdmin.Use(middleware.RoleRequired("super_admin"))
 			{
 				superAdmin.GET("/users", userHandler.ListUsers)
 				superAdmin.PATCH("/users/:id/role", userHandler.UpdateRole)
+				superAdmin.POST("/buildings", buildingHandler.Create)
+				superAdmin.POST("/room-types", roomTypeHandler.Create)
 			}
 		}
 	}

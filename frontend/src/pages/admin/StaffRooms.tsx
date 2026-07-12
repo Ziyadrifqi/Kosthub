@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Plus } from "lucide-react"
 import { useRooms } from "@/hooks/useRooms"
 import { useBuildings, useRoomTypes } from "@/hooks/useBuildingsAndTypes"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/authStore"
 import { branches } from "@/lib/branches"
+import { Plus, Pencil, Trash2, X } from "lucide-react"
 
 export default function StaffRooms() {
   const { user } = useAuthStore()
@@ -60,7 +60,35 @@ export default function StaffRooms() {
     e.preventDefault()
     createRoom.mutate()
   }
+const [editingRoom, setEditingRoom] = useState<{ id: number; room_number: string; price: string; status: string } | null>(null)
 
+const updateRoom = useMutation({
+  mutationFn: async () => {
+    if (!editingRoom) return
+    await api.patch(`/staff/rooms/${editingRoom.id}`, {
+      room_number: editingRoom.room_number,
+      price: Number(editingRoom.price),
+      status: editingRoom.status,
+    })
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["rooms"] })
+    setEditingRoom(null)
+  },
+})
+
+const deleteRoom = useMutation({
+  mutationFn: async (id: number) => {
+    await api.delete(`/staff/rooms/${id}`)
+  },
+  onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rooms"] }),
+})
+
+const handleDelete = (id: number, roomNumber: string) => {
+  if (confirm(`Yakin ingin menghapus kamar ${roomNumber}?`)) {
+    deleteRoom.mutate(id)
+  }
+}
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-2">
@@ -161,41 +189,93 @@ export default function StaffRooms() {
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-section text-text-secondary font-heading font-semibold">
-            <tr>
-              <th className="text-left px-5 py-3">Kamar</th>
-              <th className="text-left px-5 py-3">Cabang</th>
-              <th className="text-left px-5 py-3">Harga</th>
-              <th className="text-left px-5 py-3">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data?.rooms.map((r) => (
-              <tr key={r.id} className="border-t border-border">
-                <td className="px-5 py-3 text-text">{r.room_number}</td>
-                <td className="px-5 py-3 text-text-secondary">{r.branch?.name}</td>
-                <td className="px-5 py-3 text-text-secondary">Rp{r.price.toLocaleString("id-ID")}</td>
-                <td className="px-5 py-3">
-                  <span
-                    className={`text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${
-                      r.status === "available" ? "bg-primary/10 text-primary" : "bg-section text-text-secondary"
-                    }`}
-                  >
-                    {r.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-            {data?.rooms.length === 0 && (
-              <tr>
-                <td colSpan={4} className="text-center text-text-secondary py-8">
-                  Belum ada kamar di cabang ini.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+  <thead className="bg-section text-text-secondary font-heading font-semibold">
+    <tr>
+      <th className="text-left px-5 py-3">Kamar</th>
+      <th className="text-left px-5 py-3">Cabang</th>
+      <th className="text-left px-5 py-3">Harga</th>
+      <th className="text-left px-5 py-3">Status</th>
+      <th className="text-left px-5 py-3">Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {data?.rooms.map((r) => (
+      <tr key={r.id} className="border-t border-border">
+        <td className="px-5 py-3 text-text">{r.room_number}</td>
+        <td className="px-5 py-3 text-text-secondary">{r.branch?.name}</td>
+        <td className="px-5 py-3 text-text-secondary">Rp{r.price.toLocaleString("id-ID")}</td>
+        <td className="px-5 py-3">
+          <span className={`text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${r.status === "available" ? "bg-primary/10 text-primary" : "bg-section text-text-secondary"}`}>
+            {r.status}
+          </span>
+        </td>
+        <td className="px-5 py-3">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setEditingRoom({ id: r.id, room_number: r.room_number, price: String(r.price), status: r.status })}
+              className="p-1.5 text-text-secondary hover:text-primary transition-colors"
+            >
+              <Pencil size={15} />
+            </button>
+            <button
+              onClick={() => handleDelete(r.id, r.room_number)}
+              className="p-1.5 text-text-secondary hover:text-error transition-colors"
+            >
+              <Trash2 size={15} />
+            </button>
+          </div>
+        </td>
+      </tr>
+    ))}
+    {data?.rooms.length === 0 && (
+      <tr><td colSpan={5} className="text-center text-text-secondary py-8">Belum ada kamar di cabang ini.</td></tr>
+    )}
+  </tbody>
+</table>
       </div>
+      {editingRoom && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6">
+    <div className="bg-card rounded-2xl p-6 w-full max-w-sm relative">
+      <button onClick={() => setEditingRoom(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text">
+        <X size={20} />
+      </button>
+      <h3 className="font-heading font-bold text-lg text-text mb-4">Edit Kamar</h3>
+
+      <div className="space-y-3">
+        <input
+          value={editingRoom.room_number}
+          onChange={(e) => setEditingRoom({ ...editingRoom, room_number: e.target.value })}
+          placeholder="Nomor Kamar"
+          className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
+        />
+        <input
+          type="number"
+          value={editingRoom.price}
+          onChange={(e) => setEditingRoom({ ...editingRoom, price: e.target.value })}
+          placeholder="Harga"
+          className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
+        />
+        <select
+          value={editingRoom.status}
+          onChange={(e) => setEditingRoom({ ...editingRoom, status: e.target.value })}
+          className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
+        >
+          <option value="available">Available</option>
+          <option value="booked">Booked</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+      </div>
+
+      <button
+        onClick={() => updateRoom.mutate()}
+        disabled={updateRoom.isPending}
+        className="w-full mt-4 font-heading font-medium text-sm bg-primary text-white rounded-lg py-2.5 disabled:opacity-60"
+      >
+        {updateRoom.isPending ? "Menyimpan..." : "Simpan Perubahan"}
+      </button>
+    </div>
+  </div>
+)}
     </div>
   )
 }

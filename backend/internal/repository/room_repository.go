@@ -90,3 +90,11 @@ func (r *RoomRepository) FindByID(id uint) (*models.Room, error) {
 func (r *RoomRepository) Create(room *models.Room) error {
 	return r.db.Create(room).Error
 }
+
+func (r *RoomRepository) Update(room *models.Room) error {
+	return r.db.Save(room).Error
+}
+
+func (r *RoomRepository) SoftDelete(id uint) error {
+	return r.db.Delete(&models.Room{}, id).Error
+}

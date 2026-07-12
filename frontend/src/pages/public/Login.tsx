@@ -7,6 +7,8 @@ import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/authStore"
 import { fadeUpVariant } from "@/animations/framerVariants"
 
+const ADMIN_ROLES = ["staff", "owner", "super_admin"]
+
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -21,8 +23,21 @@ export default function Login() {
     },
     onSuccess: (data) => {
       setAuth(data.token, data.user)
-      const redirectTo = (location.state as { from?: Location })?.from?.pathname ?? "/"
-      navigate(redirectTo, { replace: true })
+
+      const from = (location.state as { from?: Location })?.from?.pathname
+
+      if (from) {
+        // ada halaman asal yang tadinya mau diakses sebelum diarahkan ke login → balik ke situ
+        navigate(from, { replace: true })
+        return
+      }
+
+      // tidak ada halaman asal → tentukan tujuan default berdasarkan role
+      if (data.user.role && ADMIN_ROLES.includes(data.user.role.name)) {
+        navigate("/admin", { replace: true })
+      } else {
+        navigate("/", { replace: true })
+      }
     },
   })
 

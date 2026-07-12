@@ -42,7 +42,7 @@ export function useCreateBuilding() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: { branch_id: number; name: string; total_floor: number }) => {
-      const res = await api.post("/staff/buildings", payload)
+      const res = await api.post("/super-admin/buildings", payload)
       return res.data
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buildings"] }),
@@ -53,7 +53,7 @@ export function useCreateRoomType() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: { name: string; description: string; base_price: number }) => {
-      const res = await api.post("/staff/room-types", payload)
+      const res = await api.post("/super-admin/room-types", payload)
       return res.data
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["room-types"] }),

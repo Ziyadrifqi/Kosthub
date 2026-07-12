@@ -87,3 +87,29 @@ func (s *RoomService) CreateRoom(input CreateRoomInput) (*models.Room, error) {
 	}
 	return room, nil
 }
+
+type UpdateRoomInput struct {
+	RoomNumber string
+	Price      float64
+	Status     string
+}
+
+func (s *RoomService) UpdateRoom(id uint, input UpdateRoomInput) (*models.Room, error) {
+	room, err := s.roomRepo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	room.RoomNumber = input.RoomNumber
+	room.Price = input.Price
+	room.Status = input.Status
+
+	if err := s.roomRepo.Update(room); err != nil {
+		return nil, err
+	}
+	return room, nil
+}
+
+func (s *RoomService) DeleteRoom(id uint) error {
+	return s.roomRepo.SoftDelete(id)
+}

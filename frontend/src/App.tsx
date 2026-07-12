@@ -57,19 +57,19 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
 
           <Route element={<RoleRoute allowedRoles={["staff", "super_admin"]} />}>
-            <Route path="/admin/payments" element={<AdminPayments />} />
-            <Route path="/admin/rooms" element={<StaffRooms />} />
-            <Route path="/admin/content" element={<StaffContent />} />
-            <Route path="/admin/buildings" element={<StaffBuildings />} />
-<Route path="/admin/room-types" element={<RoomTypes />} />
-          </Route>
+  <Route path="/admin/payments" element={<AdminPayments />} />
+  <Route path="/admin/rooms" element={<StaffRooms />} />
+  <Route path="/admin/content" element={<StaffContent />} />
+</Route>
+
+<Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
+  <Route path="/admin/users" element={<SuperAdminUsers />} />
+  <Route path="/admin/buildings" element={<StaffBuildings />} />
+  <Route path="/admin/room-types" element={<RoomTypes />} />
+</Route>
 
           <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>
             <Route path="/admin/reports" element={<OwnerReports />} />
-          </Route>
-
-          <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
-            <Route path="/admin/users" element={<SuperAdminUsers />} />
           </Route>
         </Route>
       </Route>

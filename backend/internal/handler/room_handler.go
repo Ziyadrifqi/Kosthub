@@ -99,3 +99,80 @@ func (h *RoomHandler) CreateRoom(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, room)
 }
+
+type updateRoomRequest struct {
+	RoomNumber string  `json:"room_number" binding:"required"`
+	Price      float64 `json:"price" binding:"required,gt=0"`
+	Status     string  `json:"status" binding:"required,oneof=available booked maintenance"`
+}
+
+// PATCH /api/staff/rooms/:id
+func (h *RoomHandler) UpdateRoom(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+		return
+	}
+
+	var req updateRoomRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	room, err := h.roomService.GetRoomByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+		return
+	}
+
+	role := c.MustGet("role").(string)
+	if role == "staff" {
+		userBranchID := c.MustGet("branch_id")
+		if userBranchID == nil || uint(userBranchID.(float64)) != room.BranchID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "kamu hanya bisa mengubah kamar di cabangmu sendiri"})
+			return
+		}
+	}
+
+	updated, err := h.roomService.UpdateRoom(uint(id), service.UpdateRoomInput{
+		RoomNumber: req.RoomNumber, Price: req.Price, Status: req.Status,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update room"})
+		return
+	}
+
+	c.JSON(http.StatusOK, updated)
+}
+
+// DELETE /api/staff/rooms/:id
+func (h *RoomHandler) DeleteRoom(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room id"})
+		return
+	}
+
+	room, err := h.roomService.GetRoomByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "room not found"})
+		return
+	}
+
+	role := c.MustGet("role").(string)
+	if role == "staff" {
+		userBranchID := c.MustGet("branch_id")
+		if userBranchID == nil || uint(userBranchID.(float64)) != room.BranchID {
+			c.JSON(http.StatusForbidden, gin.H{"error": "kamu hanya bisa menghapus kamar di cabangmu sendiri"})
+			return
+		}
+	}
+
+	if err := h.roomService.DeleteRoom(uint(id)); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete room"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "room deleted"})
+}
