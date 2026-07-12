@@ -15,6 +15,7 @@ export default function RoomDetail() {
 
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState("")
+  const apiOrigin = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ?? ""
 
   const handleBooking = () => {
     if (!token) {
@@ -42,8 +43,8 @@ export default function RoomDetail() {
       <div className="grid md:grid-cols-2 gap-10">
         <div className="h-80 bg-gradient-to-br from-primary/15 to-section rounded-md overflow-hidden">
           {room.images?.[0] ? (
-            <img src={room.images[0].image_url} alt={room.room_number} className="w-full h-full object-cover" />
-          ) : (
+  <img src={`${apiOrigin}${room.images[0].image_url}`} alt={room.room_number} className="w-full h-full object-cover" />
+) : (
             <div className="w-full h-full flex items-center justify-center text-text-secondary font-mono text-sm">Belum ada foto</div>
           )}
         </div>

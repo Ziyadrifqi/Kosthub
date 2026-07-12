@@ -24,6 +24,7 @@ func Setup(
 	contentHandler *handler.SiteContentHandler,
 	buildingHandler *handler.BuildingHandler,
 	roomTypeHandler *handler.RoomTypeHandler,
+	roomImageHandler *handler.RoomImageHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -112,9 +113,17 @@ func Setup(
 				staff.POST("/rooms", roomHandler.CreateRoom)
 				staff.PATCH("/rooms/:id", roomHandler.UpdateRoom)
 				staff.DELETE("/rooms/:id", roomHandler.DeleteRoom)
+
+				staff.POST("/rooms/:id/images", roomImageHandler.Upload)
+				staff.GET("/rooms/:id/images", roomImageHandler.List)
+				staff.DELETE("/rooms/:id/images/:imageId", roomImageHandler.Delete)
+				staff.PATCH("/rooms/:id/images/:imageId/primary", roomImageHandler.SetPrimary)
+
 				staff.GET("/payments/pending", paymentHandler.GetPendingPayments)
 				staff.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
+
 				staff.GET("/chat/rooms", chatHandler.ListOpenRooms)
+
 				staff.GET("/site-contents", contentHandler.GetPublicContents)
 				staff.PUT("/site-contents/:key", contentHandler.UpdateContent)
 			}
@@ -127,16 +136,18 @@ func Setup(
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
 			}
 
-			// ===== SUPER_ADMIN ONLY — kelola user, gedung, tipe kamar =====
+			// ===== SUPER_ADMIN ONLY — user, gedung, tipe kamar =====
 			superAdmin := protected.Group("/super-admin")
 			superAdmin.Use(middleware.RoleRequired("super_admin"))
 			{
 				superAdmin.GET("/users", userHandler.ListUsers)
-				superAdmin.DELETE("/users/:id", userHandler.Deactivate)
 				superAdmin.PATCH("/users/:id/role", userHandler.UpdateRole)
+				superAdmin.DELETE("/users/:id", userHandler.Deactivate)
+
 				superAdmin.POST("/buildings", buildingHandler.Create)
 				superAdmin.PATCH("/buildings/:id", buildingHandler.Update)
 				superAdmin.DELETE("/buildings/:id", buildingHandler.Delete)
+
 				superAdmin.POST("/room-types", roomTypeHandler.Create)
 			}
 		}

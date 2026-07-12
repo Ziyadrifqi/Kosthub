@@ -10,7 +10,8 @@ export function RoomCard({ room }: { room: Room }) {
   const primaryImage = room.images?.find((img) => img.is_primary) ?? room.images?.[0]
   const toggleFavorite = useToggleFavorite()
   const token = useAuthStore((s) => s.token)
-
+  
+const apiOrigin = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ?? ""
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault()
     if (!token) return
@@ -23,9 +24,13 @@ export function RoomCard({ room }: { room: Room }) {
         <p className="font-mono text-2xl font-medium text-brass leading-none">{room.room_number}</p>
 
         <div className="relative mt-3 h-44 rounded-sm overflow-hidden bg-gradient-to-br from-primary/15 to-section">
-          {primaryImage ? (
-            <img src={primaryImage.image_url} alt={room.room_number} className="w-full h-full object-cover" />
-          ) : (
+         {primaryImage ? (
+  <img
+    src={`${apiOrigin}${primaryImage.image_url}`}
+    alt={room.room_number}
+    className="w-full h-full object-cover"
+  />
+) : (
             <div className="w-full h-full flex items-center justify-center text-text-secondary text-sm font-mono">
               Belum ada foto
             </div>

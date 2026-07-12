@@ -20,72 +20,79 @@ func main() {
 	db := database.ConnectPostgres(cfg)
 	_ = database.ConnectRedis(cfg)
 
-	// Auth
+	// ===== Auth =====
 	userRepo := repository.NewUserRepository(db)
 	roleRepo := repository.NewRoleRepository(db)
 	authService := service.NewAuthService(userRepo, roleRepo, cfg)
 	authHandler := handler.NewAuthHandler(authService)
 
-	// Rooms
+	// ===== Room Images (dibutuhkan RoomService) =====
+	roomImageRepo := repository.NewRoomImageRepository(db)
+
+	// ===== Rooms =====
 	roomRepo := repository.NewRoomRepository(db)
-	roomService := service.NewRoomService(roomRepo)
+	roomService := service.NewRoomService(roomRepo, roomImageRepo)
 	roomHandler := handler.NewRoomHandler(roomService)
 
-	// Notifications
+	roomImageService := service.NewRoomImageService(roomImageRepo, roomRepo)
+	roomImageHandler := handler.NewRoomImageHandler(roomImageService)
+
+	// ===== Notifications (dibutuhkan booking & payment service) =====
 	notifRepo := repository.NewNotificationRepository(db)
 	notifService := service.NewNotificationService(notifRepo)
 	notificationHandler := handler.NewNotificationHandler(notifService)
 
-	// Bookings
+	// ===== Bookings =====
 	bookingRepo := repository.NewBookingRepository(db)
 	bookingService := service.NewBookingService(bookingRepo, roomRepo, notifService)
 	bookingHandler := handler.NewBookingHandler(bookingService)
 
-	// Payments
+	// ===== Payments =====
 	paymentRepo := repository.NewPaymentRepository(db)
 	paymentService := service.NewPaymentService(paymentRepo, bookingRepo, notifService)
 	paymentHandler := handler.NewPaymentHandler(paymentService)
 
-	// Reports
+	// ===== Reports =====
 	reportService := service.NewReportService(db)
 	reportHandler := handler.NewReportHandler(reportService)
 
-	// User management
+	// ===== User Management =====
 	userMgmtService := service.NewUserManagementService(db, userRepo)
 	userHandler := handler.NewUserHandler(userMgmtService)
 
-	// Favorites
+	// ===== Favorites =====
 	favRepo := repository.NewFavoriteRepository(db)
 	favService := service.NewFavoriteService(favRepo)
 	favoriteHandler := handler.NewFavoriteHandler(favService)
 
-	// Reviews
+	// ===== Reviews =====
 	reviewRepo := repository.NewReviewRepository(db)
 	reviewService := service.NewReviewService(reviewRepo)
 	reviewHandler := handler.NewReviewHandler(reviewService)
 
-	// Chat
+	// ===== Chat =====
 	hub := ws.NewHub()
 	chatRepo := repository.NewChatRepository(db)
 	chatService := service.NewChatService(chatRepo)
 	chatHandler := handler.NewChatHandler(chatService)
 	wsHandler := handler.NewWSHandler(hub, chatService, cfg.JWTSecret)
 
-	// Site Content (CMS)
+	// ===== Site Content (CMS) =====
 	contentRepo := repository.NewSiteContentRepository(db)
 	contentService := service.NewSiteContentService(contentRepo)
 	contentHandler := handler.NewSiteContentHandler(contentService)
 
-	// Buildings
+	// ===== Buildings =====
 	buildingRepo := repository.NewBuildingRepository(db)
 	buildingService := service.NewBuildingService(buildingRepo)
 	buildingHandler := handler.NewBuildingHandler(buildingService)
 
-	// Room Types
+	// ===== Room Types =====
 	roomTypeRepo := repository.NewRoomTypeRepository(db)
 	roomTypeService := service.NewRoomTypeService(roomTypeRepo)
 	roomTypeHandler := handler.NewRoomTypeHandler(roomTypeService)
 
+	// ===== Router =====
 	r := router.Setup(
 		cfg,
 		authHandler,
@@ -102,8 +109,10 @@ func main() {
 		contentHandler,
 		buildingHandler,
 		roomTypeHandler,
+		roomImageHandler,
 	)
 
+	// ===== Background Worker =====
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)

@@ -6,11 +6,12 @@ import (
 )
 
 type RoomService struct {
-	roomRepo *repository.RoomRepository
+	roomRepo      *repository.RoomRepository
+	roomImageRepo *repository.RoomImageRepository
 }
 
-func NewRoomService(roomRepo *repository.RoomRepository) *RoomService {
-	return &RoomService{roomRepo: roomRepo}
+func NewRoomService(roomRepo *repository.RoomRepository, roomImageRepo *repository.RoomImageRepository) *RoomService {
+	return &RoomService{roomRepo: roomRepo, roomImageRepo: roomImageRepo}
 }
 
 type ListRoomsInput struct {
@@ -111,5 +112,12 @@ func (s *RoomService) UpdateRoom(id uint, input UpdateRoomInput) (*models.Room, 
 }
 
 func (s *RoomService) DeleteRoom(id uint) error {
+	// hapus semua foto fisik terkait dulu sebelum kamar dihapus
+	images, err := s.roomImageRepo.FindByRoomID(id)
+	if err == nil {
+		for _, img := range images {
+			s.roomImageRepo.DeletePhysicalOnly(img.ImageURL)
+		}
+	}
 	return s.roomRepo.SoftDelete(id)
 }

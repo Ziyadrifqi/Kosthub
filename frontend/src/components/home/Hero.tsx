@@ -20,6 +20,10 @@ export function Hero() {
   const featuredRoom = featuredData?.rooms?.[0]
   const featuredImage = featuredRoom?.images?.find((img) => img.is_primary) ?? featuredRoom?.images?.[0]
 
+  // image_url yang disimpan di backend berupa path relatif (/uploads/rooms/xxx.jpg),
+  // jadi perlu digabung dengan origin API supaya browser fetch ke backend, bukan ke frontend.
+  const apiOrigin = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ?? ""
+
   // Fallback ke copy default kalau CMS belum diisi — biar hero nggak pernah kosong.
   const heroTitle = content?.hero_title || "Hunian terpilih,\ndikelola satu tangan."
   const heroSubtitle =
@@ -102,10 +106,10 @@ export function Hero() {
             <div className="rounded-md h-[380px] overflow-hidden shadow-xl shadow-ink/25 bg-primary relative">
               {featuredImage ? (
                 <img
-                  src={featuredImage.image_url}
-                  alt={featuredRoom?.room_number ?? "Kamar unggulan"}
-                  className="w-full h-full object-cover"
-                />
+  src={`${apiOrigin}${featuredImage.image_url}`}
+  alt={featuredRoom?.room_number ?? "Kamar unggulan"}
+  className="w-full h-full object-cover object-top"
+/>
               ) : (
                 // Fallback ilustrasi denah — dipakai kalau belum ada foto kamar di database
                 <svg viewBox="0 0 400 380" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
