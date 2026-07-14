@@ -105,6 +105,7 @@ func Setup(
 			protected.POST("/favorites/:roomId/toggle", favoriteHandler.Toggle)
 			protected.GET("/favorites", favoriteHandler.GetMyFavorites)
 			protected.POST("/reviews", reviewHandler.CreateReview)
+			protected.PATCH("/chat/my-room/branch", chatHandler.SetMyRoomBranch)
 
 			// ===== STAFF ONLY — operasional harian =====
 			staff := protected.Group("/staff")

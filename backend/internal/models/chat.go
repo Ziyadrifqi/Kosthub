@@ -7,13 +7,16 @@ import (
 )
 
 type ChatRoom struct {
-	ID        uuid.UUID  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	UserID    uuid.UUID  `json:"user_id"`
-	User      *User      `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	AdminID   *uuid.UUID `json:"admin_id"`
-	Admin     *User      `gorm:"foreignKey:AdminID" json:"admin,omitempty"`
-	Status    string     `gorm:"size:20;default:open" json:"status"` // open, closed
-	CreatedAt time.Time  `json:"created_at"`
+	ID          uuid.UUID  `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	UserID      uuid.UUID  `json:"user_id"`
+	User        *User      `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	BranchID    *uint      `json:"branch_id"`
+	Branch      *Branch    `gorm:"foreignKey:BranchID" json:"branch,omitempty"`
+	AdminID     *uuid.UUID `json:"admin_id"`
+	Admin       *User      `gorm:"foreignKey:AdminID" json:"admin,omitempty"`
+	Status      string     `gorm:"size:20;default:open" json:"status"`
+	UnreadCount int        `gorm:"-" json:"unread_count"`
+	CreatedAt   time.Time  `json:"created_at"`
 }
 
 func (ChatRoom) TableName() string { return "chat_rooms" }

@@ -28,6 +28,7 @@ import RoomTypes from "@/pages/admin/RoomTypes"
 import About from "@/pages/public/About"
 import Help from "@/pages/public/Help"
 import Contact from "@/pages/public/Contact"
+import AdminChat from "@/pages/admin/AdminChat"
 
 function App() {
   useEffect(() => {
@@ -65,6 +66,7 @@ function App() {
          <Route element={<RoleRoute allowedRoles={["staff"]} />}>
   <Route path="/admin/payments" element={<AdminPayments />} />
   <Route path="/admin/rooms" element={<StaffRooms />} />
+  <Route path="/admin/chat" element={<AdminChat />} />
 </Route>
 
 <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>

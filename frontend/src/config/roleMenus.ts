@@ -2,6 +2,7 @@ import {
   LayoutDashboard,
   Wallet,
   DoorOpen,
+  MessageCircle,
   BarChart3,
   Users,
   FileClock,
@@ -26,6 +27,7 @@ export const roleMenus: Record<string, MenuItem[]> = {
  staff: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
   { label: "Kelola Kamar", to: "/admin/rooms", icon: DoorOpen },
+  { label: "Live Chat", to: "/admin/chat", icon: MessageCircle },
   { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
 ],
   owner: [

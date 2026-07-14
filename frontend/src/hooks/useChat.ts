@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query"
-import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/authStore"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { api } from "@/lib/api"
 
 interface ChatRoom {
   id: string
   user_id: string
+  branch_id?: number
   status: string
 }
 
@@ -36,5 +37,15 @@ export function useChatHistory(roomId: string | undefined) {
       return res.data.messages
     },
     enabled: !!token && !!roomId,
+  })
+}
+
+export function useSetChatBranch() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (branchId: number) => {
+      await api.patch("/chat/my-room/branch", { branch_id: branchId })
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["my-chat-room"] }),
   })
 }
