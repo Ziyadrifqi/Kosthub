@@ -13,7 +13,6 @@ const columns = [
     title: "Perusahaan",
     links: [
       { label: "Tentang Kami", to: "/about" },
-      { label: "Blog", to: "/blog" },
     ],
   },
   {

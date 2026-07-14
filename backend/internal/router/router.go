@@ -123,9 +123,6 @@ func Setup(
 				staff.PATCH("/payments/:id/verify", paymentHandler.VerifyPayment)
 
 				staff.GET("/chat/rooms", chatHandler.ListOpenRooms)
-
-				staff.GET("/site-contents", contentHandler.GetPublicContents)
-				staff.PUT("/site-contents/:key", contentHandler.UpdateContent)
 			}
 
 			// ===== OWNER & SUPER_ADMIN — pengawasan =====
@@ -149,6 +146,9 @@ func Setup(
 				superAdmin.DELETE("/buildings/:id", buildingHandler.Delete)
 
 				superAdmin.POST("/room-types", roomTypeHandler.Create)
+
+				superAdmin.GET("/site-contents", contentHandler.GetPublicContents)
+				superAdmin.PUT("/site-contents/:key", contentHandler.UpdateContent)
 			}
 		}
 	}

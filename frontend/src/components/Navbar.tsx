@@ -6,9 +6,9 @@ import { NotificationBell } from "@/components/NotificationBell"
 import { ConfirmModal } from "@/components/ConfirmModal"
 import { branches } from "@/lib/branches"
 
+
 const navLinks = [
   { label: "Cari Kamar", to: "/rooms" },
-  { label: "Cara Kerja", to: "/#cara-kerja" },
   { label: "Bantuan", to: "/help" },
 ]
 
@@ -17,7 +17,7 @@ export function Navbar() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-
+  
   const handleLogout = () => {
     logout()
     navigate("/")

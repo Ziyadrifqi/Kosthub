@@ -3,19 +3,54 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { CheckCircle2 } from "lucide-react"
 import { api } from "@/lib/api"
 
-const editableKeys = [
-  { key: "hero_title", label: "Judul Hero (Halaman Utama)" },
-  { key: "hero_subtitle", label: "Subjudul Hero" },
-  { key: "promo_banner", label: "Banner Promo (kosongkan untuk sembunyikan)" },
-  { key: "announcement", label: "Pengumuman (kosongkan untuk sembunyikan)" },
+const tabs = [
+  {
+    id: "home",
+    label: "Beranda",
+    fields: [
+      { key: "hero_title", label: "Judul Hero" },
+      { key: "hero_subtitle", label: "Subjudul Hero" },
+      { key: "promo_banner", label: "Banner Promo (kosongkan untuk sembunyikan)" },
+      { key: "announcement", label: "Pengumuman (kosongkan untuk sembunyikan)" },
+    ],
+  },
+  {
+    id: "about",
+    label: "Tentang Kami",
+    fields: [
+      { key: "about_title", label: "Judul Halaman" },
+      { key: "about_content", label: "Isi Konten" },
+    ],
+  },
+  {
+    id: "help",
+    label: "Bantuan",
+    fields: [
+      { key: "help_title", label: "Judul Halaman" },
+      { key: "help_content", label: "Isi Konten" },
+    ],
+  },
+  {
+    id: "contact",
+    label: "Kontak Kami",
+    fields: [
+      { key: "contact_title", label: "Judul Halaman" },
+      { key: "contact_content", label: "Isi Konten" },
+      { key: "contact_email", label: "Email" },
+      { key: "contact_phone", label: "No. Telepon" },
+      { key: "contact_address", label: "Alamat" },
+    ],
+  },
 ]
 
 export default function StaffContent() {
   const queryClient = useQueryClient()
+  const [activeTab, setActiveTab] = useState(tabs[0].id)
+
   const { data } = useQuery({
     queryKey: ["site-contents-admin"],
     queryFn: async () => {
-      const res = await api.get<Record<string, string>>("/staff/site-contents")
+      const res = await api.get<Record<string, string>>("/super-admin/site-contents")
       return res.data
     },
   })
@@ -29,28 +64,47 @@ export default function StaffContent() {
 
   const updateContent = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
-      await api.put(`/staff/site-contents/${key}`, { value })
+      await api.put(`/super-admin/site-contents/${key}`, { value })
     },
     onSuccess: (_, { key }) => {
       queryClient.invalidateQueries({ queryKey: ["site-contents-admin"] })
+      queryClient.invalidateQueries({ queryKey: ["site-contents"] }) // dipakai halaman publik
       setSavedKey(key)
       setTimeout(() => setSavedKey(null), 2000)
     },
   })
 
-  return (
-   <div className="p-4 sm:p-8">
-  <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-text mb-1">Kelola Konten Website</h1>
-  <p className="text-text-secondary mb-6 sm:mb-8">Perubahan langsung tampil di halaman utama. </p>
+  const currentFields = tabs.find((t) => t.id === activeTab)?.fields ?? []
 
-  <div className="space-y-5 max-w-2xl">
-        {editableKeys.map((item) => (
+  return (
+    <div className="p-8">
+      <h1 className="font-heading font-extrabold text-2xl text-text mb-1">Kelola Konten Website</h1>
+      <p className="text-text-secondary mb-6">Perubahan langsung tampil di halaman publik tanpa perlu deploy ulang.</p>
+
+      <div className="flex gap-1 border-b border-border mb-6">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2.5 text-sm font-heading font-medium border-b-2 transition-colors ${
+              activeTab === tab.id
+                ? "border-primary text-primary"
+                : "border-transparent text-text-secondary hover:text-text"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-5 max-w-2xl">
+        {currentFields.map((item) => (
           <div key={item.key} className="bg-card border border-border rounded-2xl p-5">
             <label className="block text-sm font-heading font-medium text-text mb-2">{item.label}</label>
             <textarea
               value={values[item.key] ?? ""}
               onChange={(e) => setValues({ ...values, [item.key]: e.target.value })}
-              rows={2}
+              rows={item.key.endsWith("_content") ? 4 : 2}
               className="w-full border border-border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
             />
             <div className="flex items-center gap-3 mt-3">

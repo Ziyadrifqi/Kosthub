@@ -25,6 +25,9 @@ import StaffRooms from "@/pages/admin/StaffRooms"
 import StaffContent from "@/pages/admin/StaffContent"
 import StaffBuildings from "@/pages/admin/StaffBuildings"
 import RoomTypes from "@/pages/admin/RoomTypes"
+import About from "@/pages/public/About"
+import Help from "@/pages/public/Help"
+import Contact from "@/pages/public/Contact"
 
 function App() {
   useEffect(() => {
@@ -41,6 +44,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/rooms" element={<RoomList />} />
         <Route path="/rooms/:id" element={<RoomDetail />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/help" element={<Help />} />
+        <Route path="/contact" element={<Contact />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/booking/:roomId" element={<Booking />} />
@@ -56,16 +62,16 @@ function App() {
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
 
-          <Route element={<RoleRoute allowedRoles={["staff"]} />}>
+         <Route element={<RoleRoute allowedRoles={["staff"]} />}>
   <Route path="/admin/payments" element={<AdminPayments />} />
   <Route path="/admin/rooms" element={<StaffRooms />} />
-  <Route path="/admin/content" element={<StaffContent />} />
 </Route>
 
 <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
   <Route path="/admin/users" element={<SuperAdminUsers />} />
   <Route path="/admin/buildings" element={<StaffBuildings />} />
   <Route path="/admin/room-types" element={<RoomTypes />} />
+  <Route path="/admin/content" element={<StaffContent />} />
 </Route>
 
           <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>

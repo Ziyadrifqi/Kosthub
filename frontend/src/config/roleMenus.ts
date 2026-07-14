@@ -27,17 +27,17 @@ export const roleMenus: Record<string, MenuItem[]> = {
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
   { label: "Kelola Kamar", to: "/admin/rooms", icon: DoorOpen },
   { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
-  { label: "Kelola Konten", to: "/admin/content", icon: FileText },
 ],
   owner: [
     { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
     { label: "Laporan Revenue", to: "/admin/reports", icon: BarChart3 },
     { label: "Audit Log", to: "/admin/audit", icon: FileClock },
   ],
- super_admin: [
+super_admin: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
   { label: "Kelola Gedung", to: "/admin/buildings", icon: Building2 },
   { label: "Tipe Kamar", to: "/admin/room-types", icon: Layers },
+  { label: "Kelola Konten", to: "/admin/content", icon: FileText },
   { label: "Kelola User", to: "/admin/users", icon: Users },
 ],
 }
