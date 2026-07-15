@@ -15,13 +15,14 @@ import (
 )
 
 type WSHandler struct {
-	hub         *ws.Hub
-	chatService *service.ChatService
-	jwtSecret   string
+	hub          *ws.Hub
+	chatService  *service.ChatService
+	notifService *service.NotificationService
+	jwtSecret    string
 }
 
-func NewWSHandler(hub *ws.Hub, chatService *service.ChatService, jwtSecret string) *WSHandler {
-	return &WSHandler{hub: hub, chatService: chatService, jwtSecret: jwtSecret}
+func NewWSHandler(hub *ws.Hub, chatService *service.ChatService, notifService *service.NotificationService, jwtSecret string) *WSHandler {
+	return &WSHandler{hub: hub, chatService: chatService, notifService: notifService, jwtSecret: jwtSecret}
 }
 
 var upgrader = websocket.Upgrader{
@@ -125,9 +126,36 @@ func (h *WSHandler) readPump(client *ws.Client) {
 		payload, _ := json.Marshal(out)
 
 		h.hub.Broadcast(client.RoomID, payload)
+
+		// kirim notifikasi ke pihak lain di percakapan ini (bukan ke pengirim sendiri)
+		h.notifyOtherParty(client.RoomID, client.UserID, incoming.Message)
 	}
 }
 
+// notifyOtherParty mencari siapa lawan bicara di room ini (customer atau admin)
+// dan kirim notifikasi ke dia — supaya tetap tahu ada pesan baru meski sedang offline.
+func (h *WSHandler) notifyOtherParty(roomID, senderID uuid.UUID, message string) {
+	room, err := h.chatService.GetRoomByID(roomID)
+	if err != nil {
+		return
+	}
+
+	preview := message
+	if len(preview) > 60 {
+		preview = preview[:60] + "..."
+	}
+
+	if senderID == room.UserID {
+		// customer yang kirim → notifikasi ke SEMUA staff di cabang itu
+		if room.BranchID != nil {
+			h.notifService.NotifyStaffByBranch(*room.BranchID, "Pesan Chat Baru", preview, "info")
+		}
+		return
+	}
+
+	// staff yang kirim (balas) → notifikasi ke customer pemilik chat
+	h.notifService.Notify(room.UserID, "Admin Membalas Chat", preview, "info")
+}
 func (h *WSHandler) writePump(client *ws.Client) {
 	defer client.Conn.Close()
 	for message := range client.Send {

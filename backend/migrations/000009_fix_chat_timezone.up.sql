@@ -1,0 +1,5 @@
+ALTER TABLE chat_messages
+ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC';
+
+ALTER TABLE chat_rooms
+ALTER COLUMN created_at TYPE TIMESTAMPTZ USING created_at AT TIME ZONE 'UTC';

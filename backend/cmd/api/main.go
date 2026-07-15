@@ -39,7 +39,7 @@ func main() {
 
 	// ===== Notifications (dibutuhkan booking & payment service) =====
 	notifRepo := repository.NewNotificationRepository(db)
-	notifService := service.NewNotificationService(notifRepo)
+	notifService := service.NewNotificationService(notifRepo, userRepo)
 	notificationHandler := handler.NewNotificationHandler(notifService)
 
 	// ===== Bookings =====
@@ -75,7 +75,7 @@ func main() {
 	chatRepo := repository.NewChatRepository(db)
 	chatService := service.NewChatService(chatRepo)
 	chatHandler := handler.NewChatHandler(chatService)
-	wsHandler := handler.NewWSHandler(hub, chatService, cfg.JWTSecret)
+	wsHandler := handler.NewWSHandler(hub, chatService, notifService, cfg.JWTSecret)
 
 	// ===== Site Content (CMS) =====
 	contentRepo := repository.NewSiteContentRepository(db)

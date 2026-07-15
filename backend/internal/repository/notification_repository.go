@@ -61,3 +61,12 @@ func (r *NotificationRepository) MarkAllAsRead(userID uuid.UUID) error {
 		Where("user_id = ? AND is_read = ?", userID, false).
 		Update("is_read", true).Error
 }
+
+func (r *UserRepository) FindStaffByBranch(branchID uint) ([]models.User, error) {
+	var users []models.User
+	err := r.db.
+		Joins("JOIN roles ON roles.id = users.role_id").
+		Where("roles.name = ? AND users.branch_id = ?", "staff", branchID).
+		Find(&users).Error
+	return users, err
+}

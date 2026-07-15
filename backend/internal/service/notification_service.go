@@ -8,10 +8,11 @@ import (
 
 type NotificationService struct {
 	notifRepo *repository.NotificationRepository
+	userRepo  *repository.UserRepository
 }
 
-func NewNotificationService(notifRepo *repository.NotificationRepository) *NotificationService {
-	return &NotificationService{notifRepo: notifRepo}
+func NewNotificationService(notifRepo *repository.NotificationRepository, userRepo *repository.UserRepository) *NotificationService {
+	return &NotificationService{notifRepo: notifRepo, userRepo: userRepo}
 }
 
 func (s *NotificationService) Notify(userID uuid.UUID, title, body, notifType string) error {
@@ -37,4 +38,18 @@ func (s *NotificationService) MarkAsRead(id uint, userID uuid.UUID) error {
 
 func (s *NotificationService) MarkAllAsRead(userID uuid.UUID) error {
 	return s.notifRepo.MarkAllAsRead(userID)
+}
+
+// NotifyStaffByBranch mengirim notifikasi ke SEMUA staff yang bertugas di cabang tersebut
+func (s *NotificationService) NotifyStaffByBranch(branchID uint, title, body, notifType string) error {
+	staffUsers, err := s.userRepo.FindStaffByBranch(branchID)
+	if err != nil {
+		return err
+	}
+	for _, staff := range staffUsers {
+		s.notifRepo.Create(&models.Notification{
+			UserID: staff.ID, Title: title, Body: body, Type: notifType,
+		})
+	}
+	return nil
 }
