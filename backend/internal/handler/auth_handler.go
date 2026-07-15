@@ -9,11 +9,12 @@ import (
 )
 
 type AuthHandler struct {
-	authService *service.AuthService
+	authService  *service.AuthService
+	emailService *service.EmailService
 }
 
-func NewAuthHandler(authService *service.AuthService) *AuthHandler {
-	return &AuthHandler{authService: authService}
+func NewAuthHandler(authService *service.AuthService, emailService *service.EmailService) *AuthHandler {
+	return &AuthHandler{authService: authService, emailService: emailService}
 }
 
 type registerRequest struct {
@@ -132,4 +133,41 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		"token":   token,
 		"user":    user,
 	})
+}
+
+type forgotPasswordRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+func (h *AuthHandler) ForgotPassword(c *gin.Context) {
+	var req forgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	h.authService.ForgotPassword(req.Email, h.emailService)
+
+	// selalu balas sukses meski email tidak ditemukan — keamanan
+	c.JSON(http.StatusOK, gin.H{"message": "Kalau email terdaftar, link reset sudah dikirim."})
+}
+
+type resetPasswordRequest struct {
+	Token       string `json:"token" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required,min=6"`
+}
+
+func (h *AuthHandler) ResetPassword(c *gin.Context) {
+	var req resetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.authService.ResetPassword(req.Token, req.NewPassword); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Token reset tidak valid atau sudah kedaluwarsa."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Kata sandi berhasil diubah."})
 }

@@ -1,6 +1,8 @@
 package service
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"strconv"
 	"time"
@@ -177,4 +179,44 @@ func (s *AuthService) ChangePassword(input ChangePasswordInput) error {
 	}
 
 	return s.userRepo.UpdatePassword(input.UserID, string(newHash))
+}
+
+var ErrInvalidResetToken = errors.New("token reset tidak valid atau sudah kedaluwarsa")
+
+func (s *AuthService) ForgotPassword(email string, emailService *EmailService) error {
+	user, err := s.userRepo.FindByEmail(email)
+	if err != nil {
+		// SENGAJA tidak return error — supaya orang tidak bisa "menebak" email
+		// mana yang terdaftar cuma dari respons API (keamanan)
+		return nil
+	}
+
+	tokenBytes := make([]byte, 32)
+	rand.Read(tokenBytes)
+	token := hex.EncodeToString(tokenBytes)
+	expiresAt := time.Now().Add(1 * time.Hour)
+
+	if err := s.userRepo.SetResetToken(user.ID, token, expiresAt); err != nil {
+		return err
+	}
+
+	return emailService.SendPasswordReset(user.Email, user.Name, token)
+}
+
+func (s *AuthService) ResetPassword(token, newPassword string) error {
+	user, err := s.userRepo.FindByResetToken(token)
+	if err != nil {
+		return ErrInvalidResetToken
+	}
+
+	newHash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	if err := s.userRepo.UpdatePassword(user.ID, string(newHash)); err != nil {
+		return err
+	}
+
+	return s.userRepo.ClearResetToken(user.ID)
 }

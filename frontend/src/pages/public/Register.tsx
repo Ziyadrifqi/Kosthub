@@ -8,11 +8,17 @@ import { fadeUpVariant } from "@/animations/framerVariants"
 
 export default function Register() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" })
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "", phone: "" })
+  const passwordMismatch = form.confirmPassword.length > 0 && form.password !== form.confirmPassword
 
   const registerMutation = useMutation({
     mutationFn: async () => {
-      const res = await api.post("/auth/register", form)
+      const res = await api.post("/auth/register", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+      })
       return res.data
     },
     onSuccess: () => navigate("/login"),
@@ -24,6 +30,7 @@ export default function Register() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (passwordMismatch) return
     registerMutation.mutate()
   }
 
@@ -78,13 +85,25 @@ export default function Register() {
             />
           </div>
 
+          <div>
+            <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">Konfirmasi Kata Sandi</label>
+            <input
+              type="password" name="confirmPassword" required value={form.confirmPassword} onChange={handleChange}
+              className="w-full border border-border rounded-sm px-4 py-2.5 text-sm bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              placeholder="Ulangi kata sandi"
+            />
+            {passwordMismatch && (
+              <p className="text-clay text-xs mt-1.5">Kata sandi tidak cocok.</p>
+            )}
+          </div>
+
           {registerMutation.isError && (
             <p className="text-clay text-sm font-mono">Gagal daftar. Email mungkin sudah dipakai.</p>
           )}
 
           <button
             type="submit"
-            disabled={registerMutation.isPending}
+            disabled={registerMutation.isPending || passwordMismatch}
             className="w-full font-heading font-medium bg-ink hover:bg-primary text-paper rounded-sm py-2.5 transition-colors disabled:opacity-60"
           >
             {registerMutation.isPending ? "Memproses..." : "Daftar"}

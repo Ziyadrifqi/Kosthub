@@ -2,6 +2,7 @@ import { useState } from "react"
 import { CheckCircle2 } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { useUpdateProfile, useChangePassword } from "@/hooks/useProfile"
+import { Link } from "react-router-dom"
 
 export default function Profile() {
   const { user } = useAuthStore()
@@ -90,8 +91,12 @@ export default function Profile() {
 
       <form onSubmit={handlePasswordSubmit} className="relative bg-card border border-border rounded-md p-6 space-y-4">
         <span className="absolute -top-2.5 left-6 w-3 h-3 rounded-full bg-brass shadow-sm ring-2 ring-card" />
-        <h2 className="font-heading font-medium text-ink">Ganti Kata Sandi</h2>
-
+        <div className="flex items-center justify-between">
+  <h2 className="font-heading font-medium text-ink">Ganti Kata Sandi</h2>
+  <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+    Lupa kata sandi saat ini?
+  </Link>
+</div>
         <div>
           <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">Kata Sandi Saat Ini</label>
           <input

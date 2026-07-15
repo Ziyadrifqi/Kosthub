@@ -24,7 +24,8 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	roleRepo := repository.NewRoleRepository(db)
 	authService := service.NewAuthService(userRepo, roleRepo, cfg)
-	authHandler := handler.NewAuthHandler(authService)
+	emailService := service.NewEmailService(cfg)
+	authHandler := handler.NewAuthHandler(authService, emailService)
 
 	// ===== Room Images (dibutuhkan RoomService) =====
 	roomImageRepo := repository.NewRoomImageRepository(db)

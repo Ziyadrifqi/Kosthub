@@ -12,6 +12,8 @@ const ADMIN_ROLES = ["staff", "owner", "super_admin"]
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
+  const idleReason = (location.state as { reason?: string })?.reason === "idle"
+
   const setAuth = useAuthStore((s) => s.setAuth)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -59,7 +61,11 @@ export default function Login() {
           <h1 className="font-heading font-medium text-2xl text-ink">Masuk ke KostHub</h1>
         </div>
         <p className="text-text-secondary text-sm mb-6">Cari dan kelola kost impianmu.</p>
-
+{idleReason && (
+  <div className="bg-warning/10 border border-warning/30 text-warning text-xs rounded-sm p-3 mb-4">
+    Sesi kamu berakhir karena tidak ada aktivitas selama 30 menit. Silakan masuk lagi.
+  </div>
+)}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">Email</label>
@@ -84,7 +90,11 @@ export default function Login() {
               placeholder="••••••••"
             />
           </div>
-
+<div className="flex justify-end -mt-2">
+  <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+    Lupa kata sandi?
+  </Link>
+</div>
           {loginMutation.isError && (
             <p className="text-clay text-sm font-mono">Email atau kata sandi salah.</p>
           )}

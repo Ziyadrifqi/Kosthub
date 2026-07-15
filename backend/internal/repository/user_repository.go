@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/Ziyadrifqi/kosthub/backend/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -80,4 +82,27 @@ func (r *UserRepository) FindAllPaginated(search string, page, limit int) ([]mod
 	}
 
 	return users, total, nil
+}
+
+func (r *UserRepository) SetResetToken(userID uuid.UUID, token string, expiresAt time.Time) error {
+	return r.db.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"reset_token":            token,
+		"reset_token_expires_at": expiresAt,
+	}).Error
+}
+
+func (r *UserRepository) FindByResetToken(token string) (*models.User, error) {
+	var user models.User
+	err := r.db.Where("reset_token = ? AND reset_token_expires_at > ?", token, time.Now()).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) ClearResetToken(userID uuid.UUID) error {
+	return r.db.Model(&models.User{}).Where("id = ?", userID).Updates(map[string]interface{}{
+		"reset_token":            nil,
+		"reset_token_expires_at": nil,
+	}).Error
 }

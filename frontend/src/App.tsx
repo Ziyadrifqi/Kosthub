@@ -30,8 +30,14 @@ import Help from "@/pages/public/Help"
 import Contact from "@/pages/public/Contact"
 import AdminChat from "@/pages/admin/AdminChat"
 import OwnerAuditLog from "@/pages/admin/OwnerAuditLog"
+import { useIdleLogout } from "@/hooks/useIdleLogout"
+import ForgotPassword from "@/pages/public/ForgotPassword"
+import ResetPassword from "@/pages/public/ResetPassword"
+
 
 function App() {
+  useIdleLogout()
+
   useEffect(() => {
     initLenis()
     return () => destroyLenis()
@@ -44,6 +50,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+<Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/rooms" element={<RoomList />} />
         <Route path="/rooms/:id" element={<RoomDetail />} />
         <Route path="/about" element={<About />} />

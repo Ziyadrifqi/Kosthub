@@ -18,6 +18,13 @@ type Config struct {
 	DBName     string
 	DBSSLMode  string
 
+	SMTPHost     string
+	SMTPPort     string
+	SMTPUser     string
+	SMTPPassword string
+	SMTPFrom     string
+	FrontendURL  string
+
 	RedisHost     string
 	RedisPort     string
 	RedisPassword string
@@ -41,6 +48,13 @@ func Load() *Config {
 		DBPassword: getEnv("DB_PASSWORD", ""),
 		DBName:     getEnv("DB_NAME", "kosthub_db"),
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+
+		SMTPHost:     getEnv("SMTP_HOST", ""),
+		SMTPPort:     getEnv("SMTP_PORT", "587"),
+		SMTPUser:     getEnv("SMTP_USER", ""),
+		SMTPPassword: getEnv("SMTP_PASSWORD", ""),
+		SMTPFrom:     getEnv("SMTP_FROM", ""),
+		FrontendURL:  getEnv("FRONTEND_URL", "http://localhost:5173"),
 
 		RedisHost:     getEnv("REDIS_HOST", "localhost"),
 		RedisPort:     getEnv("REDIS_PORT", "6379"),
