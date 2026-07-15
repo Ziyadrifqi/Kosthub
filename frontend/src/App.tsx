@@ -29,6 +29,7 @@ import About from "@/pages/public/About"
 import Help from "@/pages/public/Help"
 import Contact from "@/pages/public/Contact"
 import AdminChat from "@/pages/admin/AdminChat"
+import OwnerAuditLog from "@/pages/admin/OwnerAuditLog"
 
 function App() {
   useEffect(() => {
@@ -77,8 +78,9 @@ function App() {
 </Route>
 
           <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>
-            <Route path="/admin/reports" element={<OwnerReports />} />
-          </Route>
+  <Route path="/admin/reports" element={<OwnerReports />} />
+  <Route path="/admin/audit" element={<OwnerAuditLog />} />
+</Route>
         </Route>
       </Route>
     </Routes>

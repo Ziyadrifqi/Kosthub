@@ -5,7 +5,10 @@ import { useAuthStore } from "@/store/authStore"
 interface ReportSummary {
   total_revenue: number
   total_bookings: number
+  pending_bookings: number
   confirmed_bookings: number
+  cancelled_bookings: number
+  completed_bookings: number
   pending_payments: number
   total_rooms: number
   occupied_rooms: number

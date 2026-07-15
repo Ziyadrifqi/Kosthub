@@ -11,12 +11,19 @@ func NewReportService(db *gorm.DB) *ReportService {
 }
 
 type ReportSummary struct {
-	TotalRevenue      float64 `json:"total_revenue"`
-	TotalBookings     int64   `json:"total_bookings"`
-	ConfirmedBookings int64   `json:"confirmed_bookings"`
-	PendingPayments   int64   `json:"pending_payments"`
-	TotalRooms        int64   `json:"total_rooms"`
-	OccupiedRooms     int64   `json:"occupied_rooms"`
+	TotalRevenue float64 `json:"total_revenue"`
+
+	// breakdown booking per status — supaya owner tahu KONDISI bisnisnya,
+	// bukan cuma angka gabungan yang membingungkan
+	TotalBookings     int64 `json:"total_bookings"`
+	PendingBookings   int64 `json:"pending_bookings"`
+	ConfirmedBookings int64 `json:"confirmed_bookings"`
+	CancelledBookings int64 `json:"cancelled_bookings"`
+	CompletedBookings int64 `json:"completed_bookings"`
+
+	PendingPayments int64 `json:"pending_payments"`
+	TotalRooms      int64 `json:"total_rooms"`
+	OccupiedRooms   int64 `json:"occupied_rooms"`
 }
 
 func (s *ReportService) GetSummary() (*ReportSummary, error) {
@@ -26,7 +33,11 @@ func (s *ReportService) GetSummary() (*ReportSummary, error) {
 		Select("COALESCE(SUM(amount), 0)").Scan(&summary.TotalRevenue)
 
 	s.db.Table("bookings").Count(&summary.TotalBookings)
+	s.db.Table("bookings").Where("status = ?", "pending").Count(&summary.PendingBookings)
 	s.db.Table("bookings").Where("status = ?", "confirmed").Count(&summary.ConfirmedBookings)
+	s.db.Table("bookings").Where("status = ?", "cancelled").Count(&summary.CancelledBookings)
+	s.db.Table("bookings").Where("status = ?", "completed").Count(&summary.CompletedBookings)
+
 	s.db.Table("payments").Where("status = ?", "waiting_verification").Count(&summary.PendingPayments)
 	s.db.Table("rooms").Count(&summary.TotalRooms)
 	s.db.Table("rooms").Where("status = ?", "booked").Count(&summary.OccupiedRooms)

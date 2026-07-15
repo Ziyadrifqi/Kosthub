@@ -9,7 +9,8 @@ import (
 type PaymentAuditLog struct {
 	ID          uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	PaymentID   uuid.UUID `json:"payment_id"`
-	Action      string    `gorm:"size:20;not null" json:"action"` // verified, rejected
+	Payment     *Payment  `gorm:"foreignKey:PaymentID" json:"payment,omitempty"`
+	Action      string    `gorm:"size:20;not null" json:"action"`
 	PerformedBy uuid.UUID `json:"performed_by"`
 	Performer   *User     `gorm:"foreignKey:PerformedBy" json:"performer,omitempty"`
 	Note        *string   `json:"note"`

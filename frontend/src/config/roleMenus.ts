@@ -31,10 +31,10 @@ export const roleMenus: Record<string, MenuItem[]> = {
   { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
 ],
   owner: [
-    { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
-    { label: "Laporan Revenue", to: "/admin/reports", icon: BarChart3 },
-    { label: "Audit Log", to: "/admin/audit", icon: FileClock },
-  ],
+  { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
+  { label: "Laporan Revenue", to: "/admin/reports", icon: BarChart3 },
+  { label: "Audit Log", to: "/admin/audit", icon: FileClock },
+],
 super_admin: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
   { label: "Kelola Gedung", to: "/admin/buildings", icon: Building2 },

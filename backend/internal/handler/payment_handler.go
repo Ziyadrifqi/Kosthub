@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/Ziyadrifqi/kosthub/backend/internal/repository"
@@ -125,4 +126,19 @@ func (h *PaymentHandler) GetAuditLogs(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"logs": logs})
+}
+
+// GET /api/owner/audit-logs?action=&page=&limit=
+func (h *PaymentHandler) GetAllAuditLogs(c *gin.Context) {
+	action := c.Query("action")
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+
+	result, err := h.paymentService.GetAllAuditLogs(action, page, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch audit logs"})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }

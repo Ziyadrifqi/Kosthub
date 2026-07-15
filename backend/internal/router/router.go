@@ -132,6 +132,7 @@ func Setup(
 			{
 				owner.GET("/reports/summary", reportHandler.GetSummary)
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
+				owner.GET("/audit-logs", paymentHandler.GetAllAuditLogs)
 			}
 
 			// ===== SUPER_ADMIN ONLY — user, gedung, tipe kamar =====

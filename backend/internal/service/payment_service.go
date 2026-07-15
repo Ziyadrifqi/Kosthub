@@ -80,3 +80,28 @@ func (s *PaymentService) VerifyPayment(paymentID uuid.UUID, approve bool, adminI
 func (s *PaymentService) GetAuditLogs(paymentID uuid.UUID) ([]models.PaymentAuditLog, error) {
 	return s.paymentRepo.FindAuditLogsByPaymentID(paymentID)
 }
+
+type AuditLogListOutput struct {
+	Logs  []models.PaymentAuditLog `json:"logs"`
+	Total int64                    `json:"total"`
+	Page  int                      `json:"page"`
+	Limit int                      `json:"limit"`
+}
+
+func (s *PaymentService) GetAllAuditLogs(action string, page, limit int) (*AuditLogListOutput, error) {
+	logs, total, err := s.paymentRepo.FindAllAuditLogs(repository.AuditLogFilter{
+		Action: action, Page: page, Limit: limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+
+	return &AuditLogListOutput{Logs: logs, Total: total, Page: page, Limit: limit}, nil
+}

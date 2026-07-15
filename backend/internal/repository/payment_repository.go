@@ -151,3 +151,45 @@ func (r *PaymentRepository) FindAuditLogsByPaymentID(paymentID uuid.UUID) ([]mod
 		Find(&logs).Error
 	return logs, err
 }
+
+type AuditLogFilter struct {
+	Action string // "verified", "rejected", atau kosong untuk semua
+	Page   int
+	Limit  int
+}
+
+func (r *PaymentRepository) FindAllAuditLogs(filter AuditLogFilter) ([]models.PaymentAuditLog, int64, error) {
+	var logs []models.PaymentAuditLog
+	var total int64
+
+	query := r.db.Model(&models.PaymentAuditLog{}).
+		Preload("Performer").
+		Preload("Payment").
+		Preload("Payment.Booking").
+		Preload("Payment.Booking.Room").
+		Preload("Payment.Booking.User")
+
+	if filter.Action != "" {
+		query = query.Where("action = ?", filter.Action)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	page := filter.Page
+	if page < 1 {
+		page = 1
+	}
+	limit := filter.Limit
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	offset := (page - 1) * limit
+
+	if err := query.Order("created_at desc").Limit(limit).Offset(offset).Find(&logs).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return logs, total, nil
+}
