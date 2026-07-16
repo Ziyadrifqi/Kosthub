@@ -80,3 +80,24 @@ export function useCreateRoomType() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["room-types"] }),
   })
 }
+
+export function useUpdateRoomType() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, name, description, base_price }: { id: number; name: string; description: string; base_price: number }) => {
+      const res = await api.patch(`/super-admin/room-types/${id}`, { name, description, base_price })
+      return res.data
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["room-types"] }),
+  })
+}
+
+export function useDeleteRoomType() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await api.delete(`/super-admin/room-types/${id}`)
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["room-types"] }),
+  })
+}

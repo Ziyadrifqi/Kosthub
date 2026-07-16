@@ -1,0 +1,1 @@
+ALTER TABLE room_types DROP COLUMN IF EXISTS deleted_at;

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Ziyadrifqi/kosthub/backend/internal/service"
 	"github.com/gin-gonic/gin"
@@ -46,4 +47,55 @@ func (h *RoomTypeHandler) List(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"room_types": types})
+}
+
+type updateRoomTypeRequest struct {
+	Name        string  `json:"name" binding:"required"`
+	Description string  `json:"description"`
+	BasePrice   float64 `json:"base_price" binding:"required,gt=0"`
+}
+
+// PATCH /api/super-admin/room-types/:id
+func (h *RoomTypeHandler) Update(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room type id"})
+		return
+	}
+
+	var req updateRoomTypeRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	rt, err := h.service.Update(uint(id), service.UpdateRoomTypeInput{
+		Name: req.Name, Description: req.Description, BasePrice: req.BasePrice,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update room type"})
+		return
+	}
+
+	c.JSON(http.StatusOK, rt)
+}
+
+// DELETE /api/super-admin/room-types/:id
+func (h *RoomTypeHandler) Delete(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid room type id"})
+		return
+	}
+
+	if err := h.service.Delete(uint(id)); err != nil {
+		if err == service.ErrRoomTypeInUse {
+			c.JSON(http.StatusConflict, gin.H{"error": "tidak bisa menghapus tipe kamar yang masih dipakai kamar aktif"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete room type"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "room type deleted"})
 }

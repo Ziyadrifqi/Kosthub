@@ -153,6 +153,9 @@ func Setup(
 
 				superAdmin.GET("/site-contents", contentHandler.GetPublicContents)
 				superAdmin.PUT("/site-contents/:key", contentHandler.UpdateContent)
+
+				superAdmin.PATCH("/room-types/:id", roomTypeHandler.Update)
+				superAdmin.DELETE("/room-types/:id", roomTypeHandler.Delete)
 			}
 		}
 	}
