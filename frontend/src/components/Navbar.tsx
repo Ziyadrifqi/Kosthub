@@ -39,12 +39,15 @@ export function Navbar() {
             </Link>
           ))}
           {user && (
-            <>
-              <Link to="/my-bookings" className="hover:text-primary transition-colors">Booking Saya</Link>
-              <Link to="/favorites" className="hover:text-primary transition-colors">Favorit</Link>
-              <Link to="/profile" className="hover:text-primary transition-colors">Profil</Link>
-            </>
-          )}
+  <>
+    <Link to="/my-bookings" className="hover:text-primary transition-colors">Booking Saya</Link>
+    <Link to="/favorites" className="hover:text-primary transition-colors">Favorit</Link>
+    <Link to="/profile" className="hover:text-primary transition-colors">Profil</Link>
+    {user.role && ["staff", "owner", "super_admin"].includes(user.role.name) && (
+      <Link to="/admin" className="text-primary hover:underline">Panel Admin</Link>
+    )}
+  </>
+)}
         </div>
 
         <div className="hidden md:flex items-center gap-3">
@@ -109,16 +112,19 @@ export function Navbar() {
           </div>
 
           <div className="pt-3 border-t border-border flex flex-col gap-2">
-            {user ? (
-              <>
-                <Link to="/my-bookings" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Booking Saya</Link>
-                <Link to="/favorites" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Favorit</Link>
-                <Link to="/profile" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Profil</Link>
-                <button onClick={() => setShowLogoutConfirm(true)} className="font-heading font-medium text-sm text-left py-1.5">
-                  Keluar
-                </button>
-              </>
-            ) : (
+           {user ? (
+  <>
+    <Link to="/my-bookings" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Booking Saya</Link>
+    <Link to="/favorites" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Favorit</Link>
+    <Link to="/profile" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Profil</Link>
+    {user.role && ["staff", "owner", "super_admin"].includes(user.role.name) && (
+      <Link to="/admin" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-primary py-1.5">Panel Admin</Link>
+    )}
+    <button onClick={() => setShowLogoutConfirm(true)} className="font-heading font-medium text-sm text-left py-1.5">
+      Keluar
+    </button>
+  </>
+) : (
               <>
                 <Link to="/login" onClick={() => setOpen(false)} className="font-heading font-medium text-sm py-1.5">Masuk</Link>
                 <Link
