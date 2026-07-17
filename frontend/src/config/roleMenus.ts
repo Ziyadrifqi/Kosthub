@@ -9,6 +9,7 @@ import {
   FileText,
   Building2,
   Layers,
+  UserX,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -24,11 +25,12 @@ export interface RoleTheme {
 }
 
 export const roleMenus: Record<string, MenuItem[]> = {
- staff: [
+staff: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
   { label: "Kelola Kamar", to: "/admin/rooms", icon: DoorOpen },
   { label: "Live Chat", to: "/admin/chat", icon: MessageCircle },
   { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
+  { label: "Pembatalan", to: "/admin/cancellations", icon: UserX },
 ],
   owner: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },

@@ -6,7 +6,6 @@ const columns = [
     title: "Produk",
     links: [
       { label: "Cari Kamar", to: "/rooms" },
-      { label: "Cara Kerja", to: "/#cara-kerja" },
     ],
   },
   {
@@ -19,6 +18,7 @@ const columns = [
     title: "Bantuan",
     links: [
       { label: "Pusat Bantuan", to: "/help" },
+      { label: "Syarat & Ketentuan", to: "/terms" },
       { label: "Hubungi Kami", to: "/contact" },
     ],
   },

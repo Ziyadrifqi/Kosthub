@@ -93,6 +93,11 @@ func main() {
 	roomTypeService := service.NewRoomTypeService(roomTypeRepo)
 	roomTypeHandler := handler.NewRoomTypeHandler(roomTypeService)
 
+	// === Cancel booking ====
+	cancellationRepo := repository.NewCancellationRepository(db)
+	cancellationService := service.NewCancellationService(cancellationRepo, bookingRepo, notifService)
+	cancellationHandler := handler.NewCancellationHandler(cancellationService)
+
 	// ===== Router =====
 	r := router.Setup(
 		cfg,
@@ -111,6 +116,7 @@ func main() {
 		buildingHandler,
 		roomTypeHandler,
 		roomImageHandler,
+		cancellationHandler,
 	)
 
 	// ===== Background Worker =====

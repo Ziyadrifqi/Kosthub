@@ -33,6 +33,8 @@ import OwnerAuditLog from "@/pages/admin/OwnerAuditLog"
 import { useIdleLogout } from "@/hooks/useIdleLogout"
 import ForgotPassword from "@/pages/public/ForgotPassword"
 import ResetPassword from "@/pages/public/ResetPassword"
+import StaffCancellations from "@/pages/admin/StaffCancellations"
+import Terms from "@/pages/public/Terms"
 
 
 function App() {
@@ -57,6 +59,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/help" element={<Help />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/terms" element={<Terms />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/booking/:roomId" element={<Booking />} />
@@ -76,6 +79,7 @@ function App() {
   <Route path="/admin/payments" element={<AdminPayments />} />
   <Route path="/admin/rooms" element={<StaffRooms />} />
   <Route path="/admin/chat" element={<AdminChat />} />
+  <Route path="/admin/cancellations" element={<StaffCancellations />} />
 </Route>
 
 <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
