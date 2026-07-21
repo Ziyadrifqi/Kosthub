@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Plus, Pencil, Trash2, X } from "lucide-react"
+import { Plus, Pencil, Trash2, X, DoorOpen} from "lucide-react"
 import {
   useRoomTypes,
   useCreateRoomType,
@@ -111,6 +111,10 @@ export default function RoomTypes() {
                 <p className="font-heading font-semibold text-text">{t.name}</p>
                 <p className="text-sm text-text-secondary mt-1">{t.description}</p>
                 <p className="font-heading font-bold text-primary mt-2">
+                  <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border text-sm text-text-secondary">
+  <DoorOpen size={14} />
+  <span>{t.room_count} kamar pakai tipe ini</span>
+</div>
                   Rp{t.base_price.toLocaleString("id-ID")}
                 </p>
               </div>

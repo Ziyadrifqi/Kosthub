@@ -15,6 +15,7 @@ export interface RoomType {
   name: string
   description: string
   base_price: number
+  room_count: number
 }
 
 export function useBuildings(branchId?: number, options?: { enabled?: boolean }) {

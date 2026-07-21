@@ -20,7 +20,17 @@ func (r *RoomTypeRepository) Create(rt *models.RoomType) error {
 func (r *RoomTypeRepository) FindAll() ([]models.RoomType, error) {
 	var types []models.RoomType
 	err := r.db.Order("name asc").Find(&types).Error
-	return types, err
+	if err != nil {
+		return nil, err
+	}
+
+	for i := range types {
+		var count int64
+		r.db.Table("rooms").Where("room_type_id = ?", types[i].ID).Count(&count)
+		types[i].RoomCount = int(count)
+	}
+
+	return types, nil
 }
 
 func (r *RoomTypeRepository) FindByID(id uint) (*models.RoomType, error) {

@@ -146,17 +146,27 @@ export default function StaffRooms() {
             ))}
           </select>
 
-          <select
-            value={form.room_type_id}
-            onChange={(e) => setForm({ ...form, room_type_id: e.target.value })}
-            required
-            className="border border-border rounded-lg px-3 py-2 text-sm"
-          >
-            <option value="">Pilih Tipe Kamar</option>
-            {roomTypes?.map((t) => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
+         <select
+  value={form.room_type_id}
+  onChange={(e) => {
+    const selectedTypeId = e.target.value
+    const selectedType = roomTypes?.find((t) => String(t.id) === selectedTypeId)
+    setForm({
+      ...form,
+      room_type_id: selectedTypeId,
+      // auto-isi harga dari base_price tipe kamar, tapi cuma kalau field harga
+      // masih kosong — supaya tidak menimpa harga yang sudah diketik manual
+      price: form.price === "" && selectedType ? String(selectedType.base_price) : form.price,
+    })
+  }}
+  required
+  className="border border-border rounded-lg px-3 py-2 text-sm"
+>
+  <option value="">Pilih Tipe Kamar</option>
+  {roomTypes?.map((t) => (
+    <option key={t.id} value={t.id}>{t.name} — Rp{t.base_price.toLocaleString("id-ID")}</option>
+  ))}
+</select>
 
           <input
             placeholder="Nomor Kamar (mis. A101)"
@@ -166,14 +176,17 @@ export default function StaffRooms() {
             className="border border-border rounded-lg px-3 py-2 text-sm"
           />
 
-          <input
-            type="number"
-            placeholder="Harga per bulan"
-            value={form.price}
-            onChange={(e) => setForm({ ...form, price: e.target.value })}
-            required
-            className="border border-border rounded-lg px-3 py-2 text-sm"
-          />
+          <div>
+  <input
+    type="number"
+    placeholder="Harga per bulan"
+    value={form.price}
+    onChange={(e) => setForm({ ...form, price: e.target.value })}
+    required
+    className="border border-border rounded-lg px-3 py-2 text-sm w-full"
+  />
+  <p className="text-xs text-text-secondary mt-1">Otomatis terisi dari harga dasar tipe kamar, bisa diubah sesuai kondisi kamar.</p>
+</div>
 
           {createRoom.isError && (
             <p className="text-error text-xs sm:col-span-2">
