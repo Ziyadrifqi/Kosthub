@@ -140,3 +140,141 @@ func (r *BookingRepository) ExpirePendingBookingsWithUsers() (int, []uuid.UUID, 
 
 	return count, affectedUsers, nil
 }
+
+// CompleteExpiredLeases mencari booking confirmed yang tanggal selesainya
+// (check_in + duration_months) sudah lewat, tandai completed & kamar balik available.
+func (r *BookingRepository) CompleteExpiredLeases() (int, error) {
+	var bookings []models.Booking
+	err := r.db.
+		Where("status = ? AND (check_in + (duration_months || ' months')::interval) <= ?", "confirmed", time.Now()).
+		Find(&bookings).Error
+	if err != nil {
+		return 0, err
+	}
+
+	count := 0
+	for _, booking := range bookings {
+		err := r.db.Transaction(func(tx *gorm.DB) error {
+			if err := tx.Model(&models.Booking{}).Where("id = ? AND status = ?", booking.ID, "confirmed").
+				Update("status", "completed").Error; err != nil {
+				return err
+			}
+			return tx.Model(&models.Room{}).Where("id = ?", booking.RoomID).
+				Update("status", "available").Error
+		})
+		if err == nil {
+			count++
+		}
+	}
+	return count, nil
+}
+
+// FindEndingSoon — booking confirmed yang bakal habis masa sewanya dalam N hari ke depan,
+// buat staff siap-siap (foto ulang, pasang iklan) sebelum kamar beneran kosong.
+func (r *BookingRepository) FindEndingSoon(branchID *uint, withinDays int) ([]models.Booking, error) {
+	var bookings []models.Booking
+	query := r.db.Preload("User").Preload("Room").Preload("Room.Branch").
+		Where("bookings.status = ?", "confirmed").
+		Where("(bookings.check_in + (bookings.duration_months || ' months')::interval) <= ?", time.Now().AddDate(0, 0, withinDays))
+
+	if branchID != nil {
+		query = query.Joins("JOIN rooms ON rooms.id = bookings.room_id").
+			Where("rooms.branch_id = ?", *branchID)
+	}
+
+	err := query.Order("bookings.check_in asc").Find(&bookings).Error
+	return bookings, err
+}
+
+type DirectBookingInput struct {
+	UserID         uuid.UUID
+	RoomID         uint
+	CheckIn        time.Time
+	DurationMonths int
+	TotalPrice     float64
+	CreatedByStaff uuid.UUID
+	PaymentNote    string
+}
+
+// CreateDirectBookingTx untuk booking walk-in: booking LANGSUNG confirmed,
+// payment LANGSUNG verified (cash), tetap tercatat di audit log siapa yang input —
+// supaya tetap ada jejak, bukan "uang masuk tanpa jejak".
+func (r *BookingRepository) CreateDirectBookingTx(input DirectBookingInput) (*models.Booking, error) {
+	var booking models.Booking
+
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		var room models.Room
+		if err := tx.Clauses(clauseForUpdate()).Where("id = ?", input.RoomID).First(&room).Error; err != nil {
+			return err
+		}
+		if room.Status != "available" {
+			return ErrRoomNotAvailable
+		}
+
+		booking = models.Booking{
+			UserID:         input.UserID,
+			RoomID:         input.RoomID,
+			CheckIn:        input.CheckIn,
+			DurationMonths: input.DurationMonths,
+			TotalPrice:     input.TotalPrice,
+			Status:         "confirmed", // langsung confirmed, tidak lewat pending
+		}
+		if err := tx.Create(&booking).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&models.Room{}).Where("id = ?", input.RoomID).Update("status", "booked").Error; err != nil {
+			return err
+		}
+
+		payment := models.Payment{
+			BookingID: booking.ID,
+			Method:    "cash",
+			Amount:    input.TotalPrice,
+			Status:    "verified",
+		}
+		if err := tx.Create(&payment).Error; err != nil {
+			return err
+		}
+
+		note := "Booking langsung di lokasi (walk-in), pembayaran tunai."
+		if input.PaymentNote != "" {
+			note = input.PaymentNote
+		}
+		auditLog := models.PaymentAuditLog{
+			PaymentID:   payment.ID,
+			Action:      "verified",
+			PerformedBy: input.CreatedByStaff,
+			Note:        &note,
+		}
+		return tx.Create(&auditLog).Error
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return &booking, nil
+}
+
+func (r *BookingRepository) FindUpcomingCheckIns(branchID *uint) ([]models.Booking, error) {
+	var bookings []models.Booking
+	query := r.db.Preload("User").Preload("Room").Preload("Room.Branch").
+		Where("bookings.status = ? AND bookings.actual_check_in_at IS NULL", "confirmed")
+
+	if branchID != nil {
+		query = query.Joins("JOIN rooms ON rooms.id = bookings.room_id").
+			Where("rooms.branch_id = ?", *branchID)
+	}
+
+	err := query.Order("bookings.check_in asc").Find(&bookings).Error
+	return bookings, err
+}
+
+func (r *BookingRepository) UpdateCheckInDate(id uuid.UUID, newDate time.Time) error {
+	return r.db.Model(&models.Booking{}).Where("id = ?", id).Update("check_in", newDate).Error
+}
+
+func (r *BookingRepository) MarkCheckedIn(id uuid.UUID) error {
+	now := time.Now()
+	return r.db.Model(&models.Booking{}).Where("id = ?", id).Update("actual_check_in_at", now).Error
+}

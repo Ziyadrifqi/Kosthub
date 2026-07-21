@@ -1,0 +1,1 @@
+ALTER TABLE bookings DROP COLUMN IF EXISTS actual_check_in_at;

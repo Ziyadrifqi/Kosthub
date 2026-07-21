@@ -129,8 +129,16 @@ func Setup(
 
 				staff.GET("/chat/rooms", chatHandler.ListOpenRooms)
 
+				staff.GET("/bookings/ending-soon", bookingHandler.GetEndingSoon)
+				staff.POST("/bookings/direct", bookingHandler.CreateDirectBooking)
+
 				staff.GET("/cancellation-requests", cancellationHandler.GetPending)
 				staff.PATCH("/cancellation-requests/:id", cancellationHandler.Process)
+
+				staff.GET("/bookings/upcoming-checkins", bookingHandler.GetUpcomingCheckIns)
+				staff.PATCH("/bookings/:id/reschedule", bookingHandler.Reschedule)
+				staff.PATCH("/bookings/:id/check-in", bookingHandler.MarkCheckedIn)
+
 			}
 
 			// ===== OWNER & SUPER_ADMIN — pengawasan =====

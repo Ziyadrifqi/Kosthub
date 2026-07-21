@@ -10,6 +10,9 @@ import {
   Building2,
   Layers,
   UserX,
+   CalendarClock,
+   UserPlus,
+   CalendarCheck,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -28,6 +31,9 @@ export const roleMenus: Record<string, MenuItem[]> = {
 staff: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
   { label: "Kelola Kamar", to: "/admin/rooms", icon: DoorOpen },
+  { label: "Jadwal Check-in", to: "/admin/checkin", icon: CalendarCheck },
+  { label: "Kamar Akan Kosong", to: "/admin/ending-soon", icon: CalendarClock },
+  { label: "Booking Langsung", to: "/admin/direct-booking", icon: UserPlus },
   { label: "Live Chat", to: "/admin/chat", icon: MessageCircle },
   { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
   { label: "Pembatalan", to: "/admin/cancellations", icon: UserX },

@@ -35,6 +35,9 @@ import ForgotPassword from "@/pages/public/ForgotPassword"
 import ResetPassword from "@/pages/public/ResetPassword"
 import StaffCancellations from "@/pages/admin/StaffCancellations"
 import Terms from "@/pages/public/Terms"
+import EndingSoon from "@/pages/admin/EndingSoon"
+import DirectBooking from "@/pages/admin/DirectBooking"
+import CheckInSchedule from "@/pages/admin/CheckInSchedule"
 
 
 function App() {
@@ -80,6 +83,9 @@ function App() {
   <Route path="/admin/rooms" element={<StaffRooms />} />
   <Route path="/admin/chat" element={<AdminChat />} />
   <Route path="/admin/cancellations" element={<StaffCancellations />} />
+  <Route path="/admin/ending-soon" element={<EndingSoon />} />
+<Route path="/admin/direct-booking" element={<DirectBooking />} />
+<Route path="/admin/checkin" element={<CheckInSchedule />} />
 </Route>
 
 <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>

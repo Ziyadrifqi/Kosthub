@@ -24,3 +24,19 @@ func StartBookingExpiryWorker(bookingService *service.BookingService, interval t
 		}
 	}()
 }
+
+func StartLeaseCompletionWorker(bookingService *service.BookingService, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	go func() {
+		for range ticker.C {
+			count, err := bookingService.CompleteExpiredLeases()
+			if err != nil {
+				log.Printf("⚠️  lease completion worker error: %v", err)
+				continue
+			}
+			if count > 0 {
+				log.Printf("🏁 lease completion worker: %d booking selesai masa sewa, kamar dikembalikan ke available", count)
+			}
+		}
+	}()
+}

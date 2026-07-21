@@ -45,7 +45,7 @@ func main() {
 
 	// ===== Bookings =====
 	bookingRepo := repository.NewBookingRepository(db)
-	bookingService := service.NewBookingService(bookingRepo, roomRepo, notifService)
+	bookingService := service.NewBookingService(bookingRepo, roomRepo, userRepo, roleRepo, notifService)
 	bookingHandler := handler.NewBookingHandler(bookingService)
 
 	// ===== Payments =====
@@ -121,6 +121,7 @@ func main() {
 
 	// ===== Background Worker =====
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
+	worker.StartLeaseCompletionWorker(bookingService, 1*time.Hour) // cek tiap jam cukup, bukan hal darurat
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)
 	if err := r.Run(":" + cfg.AppPort); err != nil {

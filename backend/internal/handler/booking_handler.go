@@ -101,3 +101,151 @@ func (h *BookingHandler) GetBooking(c *gin.Context) {
 
 	c.JSON(http.StatusOK, booking)
 }
+
+// GET /api/staff/bookings/ending-soon?days=30
+func (h *BookingHandler) GetEndingSoon(c *gin.Context) {
+	days, err := strconv.Atoi(c.DefaultQuery("days", "30"))
+	if err != nil {
+		days = 30
+	}
+
+	role := c.MustGet("role").(string)
+	var branchID *uint
+	if role == "staff" {
+		bRaw := c.MustGet("branch_id")
+		if bRaw == nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "akunmu belum di-assign ke cabang"})
+			return
+		}
+		b := uint(bRaw.(float64))
+		branchID = &b
+	}
+
+	bookings, err := h.bookingService.GetEndingSoon(branchID, days)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch data"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"bookings": bookings})
+}
+
+type createDirectBookingRequest struct {
+	RoomID         uint   `json:"room_id" binding:"required"`
+	CheckIn        string `json:"check_in" binding:"required"`
+	DurationMonths int    `json:"duration_months" binding:"required,gt=0"`
+
+	// customer bisa yang sudah ada (cari by email) atau baru (isi data lengkap)
+	CustomerEmail string `json:"customer_email" binding:"required,email"`
+	CustomerName  string `json:"customer_name"`
+	CustomerPhone string `json:"customer_phone"`
+
+	PaymentNote string `json:"payment_note"`
+}
+
+// POST /api/staff/bookings/direct — untuk booking walk-in
+func (h *BookingHandler) CreateDirectBooking(c *gin.Context) {
+	var req createDirectBookingRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	checkIn, err := time.Parse("2006-01-02", req.CheckIn)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "format tanggal salah, gunakan YYYY-MM-DD"})
+		return
+	}
+
+	staffID, _ := uuid.Parse(c.MustGet("user_id").(string))
+
+	// cari user existing dulu, kalau tidak ada bikin akun baru otomatis
+	customerID, err := h.bookingService.FindOrCreateCustomer(req.CustomerEmail, req.CustomerName, req.CustomerPhone)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "gagal memproses data customer"})
+		return
+	}
+
+	booking, err := h.bookingService.CreateDirectBooking(service.CreateDirectBookingInput{
+		UserID: customerID, RoomID: req.RoomID, CheckIn: checkIn,
+		DurationMonths: req.DurationMonths, CreatedByStaff: staffID, PaymentNote: req.PaymentNote,
+	})
+	if err != nil {
+		if err == repository.ErrRoomNotAvailable {
+			c.JSON(http.StatusConflict, gin.H{"error": "kamar sudah tidak tersedia"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "gagal membuat booking"})
+		return
+	}
+
+	c.JSON(http.StatusCreated, booking)
+}
+
+// GET /api/staff/bookings/upcoming-checkins
+func (h *BookingHandler) GetUpcomingCheckIns(c *gin.Context) {
+	role := c.MustGet("role").(string)
+	var branchID *uint
+	if role == "staff" {
+		bRaw := c.MustGet("branch_id")
+		if bRaw == nil {
+			c.JSON(http.StatusForbidden, gin.H{"error": "akunmu belum di-assign ke cabang"})
+			return
+		}
+		b := uint(bRaw.(float64))
+		branchID = &b
+	}
+
+	bookings, err := h.bookingService.GetUpcomingCheckIns(branchID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch data"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"bookings": bookings})
+}
+
+type rescheduleRequest struct {
+	CheckIn string `json:"check_in" binding:"required"`
+}
+
+// PATCH /api/staff/bookings/:id/reschedule
+func (h *BookingHandler) Reschedule(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	var req rescheduleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	newDate, err := time.Parse("2006-01-02", req.CheckIn)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "format tanggal salah"})
+		return
+	}
+
+	if err := h.bookingService.RescheduleCheckIn(id, newDate); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to reschedule"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "jadwal diperbarui"})
+}
+
+// PATCH /api/staff/bookings/:id/check-in
+func (h *BookingHandler) MarkCheckedIn(c *gin.Context) {
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	if err := h.bookingService.MarkCheckedIn(id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "ditandai sudah check-in"})
+}

@@ -1,0 +1,1 @@
+ALTER TABLE bookings ADD COLUMN actual_check_in_at TIMESTAMPTZ;

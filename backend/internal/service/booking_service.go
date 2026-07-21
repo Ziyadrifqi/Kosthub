@@ -6,16 +6,70 @@ import (
 	"github.com/Ziyadrifqi/kosthub/backend/internal/models"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/repository"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type BookingService struct {
 	bookingRepo  *repository.BookingRepository
 	roomRepo     *repository.RoomRepository
+	userRepo     *repository.UserRepository
+	roleRepo     *repository.RoleRepository
 	notifService *NotificationService
 }
 
-func NewBookingService(bookingRepo *repository.BookingRepository, roomRepo *repository.RoomRepository, notifService *NotificationService) *BookingService {
-	return &BookingService{bookingRepo: bookingRepo, roomRepo: roomRepo, notifService: notifService}
+func NewBookingService(
+	bookingRepo *repository.BookingRepository,
+	roomRepo *repository.RoomRepository,
+	userRepo *repository.UserRepository,
+	roleRepo *repository.RoleRepository,
+	notifService *NotificationService,
+) *BookingService {
+	return &BookingService{
+		bookingRepo:  bookingRepo,
+		roomRepo:     roomRepo,
+		userRepo:     userRepo,
+		roleRepo:     roleRepo,
+		notifService: notifService,
+	}
+}
+
+// FindOrCreateCustomer — dipakai staff waktu input booking walk-in.
+// Kalau email sudah terdaftar, pakai akun itu. Kalau belum, buat akun baru
+// dengan password acak (customer bisa reset password nanti lewat "Lupa Password").
+func (s *BookingService) FindOrCreateCustomer(email, name, phone string) (uuid.UUID, error) {
+	existing, err := s.userRepo.FindByEmail(email)
+	if err == nil {
+		return existing.ID, nil
+	}
+
+	randomPassword := uuid.New().String()
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(randomPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	customerRole, _ := s.roleRepo.FindByName("customer")
+
+	var phonePtr *string
+	if phone != "" {
+		phonePtr = &phone
+	}
+
+	newUser := &models.User{
+		Name:         name,
+		Email:        email,
+		PasswordHash: string(hashedPassword),
+		Phone:        phonePtr,
+	}
+	if customerRole != nil {
+		newUser.RoleID = &customerRole.ID
+	}
+
+	if err := s.userRepo.Create(newUser); err != nil {
+		return uuid.Nil, err
+	}
+
+	return newUser.ID, nil
 }
 
 type CreateBookingInput struct {
@@ -73,4 +127,48 @@ func (s *BookingService) ExpirePendingBookings() (int, error) {
 	}
 
 	return count, nil
+}
+
+func (s *BookingService) CompleteExpiredLeases() (int, error) {
+	return s.bookingRepo.CompleteExpiredLeases()
+}
+
+func (s *BookingService) GetEndingSoon(branchID *uint, days int) ([]models.Booking, error) {
+	return s.bookingRepo.FindEndingSoon(branchID, days)
+}
+
+type CreateDirectBookingInput struct {
+	UserID         uuid.UUID
+	RoomID         uint
+	CheckIn        time.Time
+	DurationMonths int
+	CreatedByStaff uuid.UUID
+	PaymentNote    string
+}
+
+func (s *BookingService) CreateDirectBooking(input CreateDirectBookingInput) (*models.Booking, error) {
+	room, err := s.roomRepo.FindByID(input.RoomID)
+	if err != nil {
+		return nil, err
+	}
+
+	totalPrice := room.Price * float64(input.DurationMonths)
+
+	return s.bookingRepo.CreateDirectBookingTx(repository.DirectBookingInput{
+		UserID: input.UserID, RoomID: input.RoomID, CheckIn: input.CheckIn,
+		DurationMonths: input.DurationMonths, TotalPrice: totalPrice,
+		CreatedByStaff: input.CreatedByStaff, PaymentNote: input.PaymentNote,
+	})
+}
+
+func (s *BookingService) GetUpcomingCheckIns(branchID *uint) ([]models.Booking, error) {
+	return s.bookingRepo.FindUpcomingCheckIns(branchID)
+}
+
+func (s *BookingService) RescheduleCheckIn(id uuid.UUID, newDate time.Time) error {
+	return s.bookingRepo.UpdateCheckInDate(id, newDate)
+}
+
+func (s *BookingService) MarkCheckedIn(id uuid.UUID) error {
+	return s.bookingRepo.MarkCheckedIn(id)
 }
