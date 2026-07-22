@@ -26,6 +26,7 @@ func Setup(
 	roomTypeHandler *handler.RoomTypeHandler,
 	roomImageHandler *handler.RoomImageHandler,
 	cancellationHandler *handler.CancellationHandler,
+	bankAccountHandler *handler.BankAccountHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -64,6 +65,7 @@ func Setup(
 		}
 
 		api.GET("/site-contents", contentHandler.GetPublicContents)
+		api.GET("/bank-accounts", bankAccountHandler.ListActive)
 		api.GET("/buildings", buildingHandler.List)
 		api.GET("/room-types", roomTypeHandler.List)
 
@@ -143,11 +145,16 @@ func Setup(
 
 			// ===== OWNER & SUPER_ADMIN — pengawasan =====
 			owner := protected.Group("/owner")
-			owner.Use(middleware.RoleRequired("owner", "super_admin"))
+			owner.Use(middleware.RoleRequired("owner"))
 			{
 				owner.GET("/reports/summary", reportHandler.GetSummary)
 				owner.GET("/payments/:id/audit-logs", paymentHandler.GetAuditLogs)
 				owner.GET("/audit-logs", paymentHandler.GetAllAuditLogs)
+				owner.GET("/bank-accounts", bankAccountHandler.ListAll)
+				owner.POST("/bank-accounts", bankAccountHandler.Create)
+				owner.PATCH("/bank-accounts/:id", bankAccountHandler.Update)
+				owner.PATCH("/bank-accounts/:id/toggle", bankAccountHandler.ToggleActive)
+				owner.DELETE("/bank-accounts/:id", bankAccountHandler.Delete)
 			}
 
 			// ===== SUPER_ADMIN ONLY — user, gedung, tipe kamar =====

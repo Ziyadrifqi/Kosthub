@@ -13,6 +13,7 @@ import {
    CalendarClock,
    UserPlus,
    CalendarCheck,
+    Landmark,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -38,8 +39,9 @@ staff: [
   { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
   { label: "Pembatalan", to: "/admin/cancellations", icon: UserX },
 ],
-  owner: [
+owner: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
+  { label: "Info Rekening", to: "/admin/bank-info", icon: Landmark },
   { label: "Laporan Revenue", to: "/admin/reports", icon: BarChart3 },
   { label: "Audit Log", to: "/admin/audit", icon: FileClock },
 ],

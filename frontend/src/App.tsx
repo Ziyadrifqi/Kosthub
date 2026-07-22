@@ -38,6 +38,8 @@ import Terms from "@/pages/public/Terms"
 import EndingSoon from "@/pages/admin/EndingSoon"
 import DirectBooking from "@/pages/admin/DirectBooking"
 import CheckInSchedule from "@/pages/admin/CheckInSchedule"
+import BankInfo from "@/pages/admin/BankInfo"
+
 
 
 function App() {
@@ -98,6 +100,7 @@ function App() {
           <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>
   <Route path="/admin/reports" element={<OwnerReports />} />
   <Route path="/admin/audit" element={<OwnerAuditLog />} />
+  <Route path="/admin/bank-info" element={<BankInfo />} />
 </Route>
         </Route>
       </Route>
