@@ -67,7 +67,9 @@ func (r *RoomRepository) FindAll(filter RoomFilter) ([]models.Room, int64, error
 	if err := query.Order("created_at desc").Limit(limit).Offset(offset).Find(&rooms).Error; err != nil {
 		return nil, 0, err
 	}
-
+	for i := range rooms {
+		rooms[i].CalculateFinalPrice()
+	}
 	return rooms, total, nil
 }
 
@@ -84,6 +86,7 @@ func (r *RoomRepository) FindByID(id uint) (*models.Room, error) {
 	if err != nil {
 		return nil, err
 	}
+	room.CalculateFinalPrice()
 	return &room, nil
 }
 

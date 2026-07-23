@@ -85,7 +85,8 @@ func (s *BookingService) CreateBooking(input CreateBookingInput) (*models.Bookin
 		return nil, err
 	}
 
-	totalPrice := room.Price * float64(input.DurationMonths)
+	pricePerMonth := room.PriceForDuration(input.DurationMonths)
+	totalPrice := pricePerMonth * float64(input.DurationMonths)
 
 	booking := &models.Booking{
 		UserID:         input.UserID,

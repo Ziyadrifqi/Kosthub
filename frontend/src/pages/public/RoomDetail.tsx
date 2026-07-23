@@ -13,9 +13,10 @@ export default function RoomDetail() {
   const { data: reviewData } = useRoomReviews(Number(id))
   const createReview = useCreateReview(Number(id))
 
+  const apiOrigin = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ?? ""
+
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState("")
-  const apiOrigin = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ?? ""
 
   const handleBooking = () => {
     if (!token) {
@@ -43,8 +44,8 @@ export default function RoomDetail() {
       <div className="grid md:grid-cols-2 gap-10">
         <div className="h-80 bg-gradient-to-br from-primary/15 to-section rounded-md overflow-hidden">
           {room.images?.[0] ? (
-  <img src={`${apiOrigin}${room.images[0].image_url}`} alt={room.room_number} className="w-full h-full object-cover" />
-) : (
+            <img src={`${apiOrigin}${room.images[0].image_url}`} alt={room.room_number} className="w-full h-full object-cover" />
+          ) : (
             <div className="w-full h-full flex items-center justify-center text-text-secondary font-mono text-sm">Belum ada foto</div>
           )}
         </div>
@@ -58,10 +59,31 @@ export default function RoomDetail() {
             <MapPin size={16} /> {room.branch?.name}, {room.branch?.city}
           </p>
 
-          <p className="font-mono font-semibold text-3xl text-primary mt-6">
-            Rp{room.price.toLocaleString("id-ID")}
-            <span className="font-normal text-text-secondary text-base"> /bulan</span>
-          </p>
+          {room.is_discount_active ? (
+            <div className="mt-6">
+              <span className="font-mono text-xs uppercase tracking-wide bg-error text-white px-2 py-1 rounded-sm">
+                {room.discount_type === "percentage" ? `-${room.discount_value}%` : `Hemat Rp${room.discount_value?.toLocaleString("id-ID")}`}
+              </span>
+              <p className="font-mono text-lg text-text-secondary line-through mt-2">
+                Rp{room.price.toLocaleString("id-ID")}
+              </p>
+              <p className="font-mono font-semibold text-3xl text-primary">
+                Rp{room.final_price.toLocaleString("id-ID")}
+                <span className="font-normal text-text-secondary text-base"> /bulan</span>
+              </p>
+            </div>
+          ) : (
+            <p className="font-mono font-semibold text-3xl text-primary mt-6">
+              Rp{room.price.toLocaleString("id-ID")}
+              <span className="font-normal text-text-secondary text-base"> /bulan</span>
+            </p>
+          )}
+
+          {room.has_conditional_discount && (
+            <p className="text-sm text-primary font-mono mt-2">
+              ✨ Diskon {room.discount_type === "percentage" ? `${room.discount_value}%` : `Rp${room.discount_value?.toLocaleString("id-ID")}`} kalau sewa minimal {room.discount_min_months} bulan
+            </p>
+          )}
 
           {room.room_type?.description && (
             <p className="text-text-secondary mt-4 leading-relaxed">{room.room_type.description}</p>

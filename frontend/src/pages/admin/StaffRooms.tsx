@@ -1,18 +1,29 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Plus, Pencil, Trash2, X, ImageIcon } from "lucide-react"
 import { useRooms } from "@/hooks/useRooms"
 import { useBuildings, useRoomTypes } from "@/hooks/useBuildingsAndTypes"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/authStore"
 import { branches } from "@/lib/branches"
-import { Plus, Pencil, Trash2, X, ImageIcon } from "lucide-react"
 import { RoomPhotoModal } from "@/components/admin/RoomPhotoModal"
+
+interface EditingRoom {
+  id: number
+  room_number: string
+  price: string
+  status: string
+  discount_type: string
+  discount_value: string
+  discount_start_date: string
+  discount_end_date: string
+  discount_min_months: string
+}
 
 export default function StaffRooms() {
   const { user } = useAuthStore()
   const isSuperAdmin = user?.role?.name === "super_admin"
 
-  // staff terkunci ke cabangnya sendiri; super_admin bisa pilih semua
   const myBranchId = user?.branch_id ?? undefined
   const myBranch = branches.find((b) => b.id === myBranchId)
 
@@ -27,7 +38,6 @@ export default function StaffRooms() {
     price: "",
   })
 
-  // cabang yang sedang aktif dipakai buat filter list & dropdown gedung
   const activeBranchId = isSuperAdmin ? Number(form.branch_id) || undefined : myBranchId
 
   const { data } = useRooms({ page: 1, limit: 50, branch_id: isSuperAdmin ? undefined : myBranchId })
@@ -62,7 +72,7 @@ export default function StaffRooms() {
     createRoom.mutate()
   }
 
-  const [editingRoom, setEditingRoom] = useState<{ id: number; room_number: string; price: string; status: string } | null>(null)
+  const [editingRoom, setEditingRoom] = useState<EditingRoom | null>(null)
   const [managingPhotosFor, setManagingPhotosFor] = useState<{ id: number; room_number: string } | null>(null)
 
   const updateRoom = useMutation({
@@ -72,6 +82,11 @@ export default function StaffRooms() {
         room_number: editingRoom.room_number,
         price: Number(editingRoom.price),
         status: editingRoom.status,
+        discount_type: editingRoom.discount_type || null,
+        discount_value: editingRoom.discount_value ? Number(editingRoom.discount_value) : null,
+        discount_start_date: editingRoom.discount_start_date || null,
+        discount_end_date: editingRoom.discount_end_date || null,
+        discount_min_months: editingRoom.discount_min_months ? Number(editingRoom.discount_min_months) : null,
       })
     },
     onSuccess: () => {
@@ -93,17 +108,31 @@ export default function StaffRooms() {
     }
   }
 
+  const openEdit = (r: any) => {
+    setEditingRoom({
+      id: r.id,
+      room_number: r.room_number,
+      price: String(r.price),
+      status: r.status,
+      discount_type: r.discount_type ?? "",
+      discount_value: r.discount_value ? String(r.discount_value) : "",
+      discount_start_date: r.discount_start_date?.split("T")[0] ?? "",
+      discount_end_date: r.discount_end_date?.split("T")[0] ?? "",
+      discount_min_months: r.discount_min_months ? String(r.discount_min_months) : "",
+    })
+  }
+
   return (
-   <div className="p-4 sm:p-8">
-  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
-    <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-text">Kelola Kamar</h1>
-    <button
-      onClick={() => setShowForm(!showForm)}
-      className="flex items-center justify-center gap-2 font-heading font-medium text-sm bg-primary hover:bg-primary-hover text-white rounded-lg px-4 py-2 transition-colors w-full sm:w-auto"
-    >
-      <Plus size={16} /> Tambah Kamar
-    </button>
-  </div>
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="font-heading font-extrabold text-2xl text-text">Kelola Kamar</h1>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 font-heading font-medium text-sm bg-primary hover:bg-primary-hover text-white rounded-lg px-4 py-2 transition-colors"
+        >
+          <Plus size={16} /> Tambah Kamar
+        </button>
+      </div>
 
       {!isSuperAdmin && (
         <p className="text-text-secondary text-sm mb-6">
@@ -146,27 +175,25 @@ export default function StaffRooms() {
             ))}
           </select>
 
-         <select
-  value={form.room_type_id}
-  onChange={(e) => {
-    const selectedTypeId = e.target.value
-    const selectedType = roomTypes?.find((t) => String(t.id) === selectedTypeId)
-    setForm({
-      ...form,
-      room_type_id: selectedTypeId,
-      // auto-isi harga dari base_price tipe kamar, tapi cuma kalau field harga
-      // masih kosong — supaya tidak menimpa harga yang sudah diketik manual
-      price: form.price === "" && selectedType ? String(selectedType.base_price) : form.price,
-    })
-  }}
-  required
-  className="border border-border rounded-lg px-3 py-2 text-sm"
->
-  <option value="">Pilih Tipe Kamar</option>
-  {roomTypes?.map((t) => (
-    <option key={t.id} value={t.id}>{t.name} — Rp{t.base_price.toLocaleString("id-ID")}</option>
-  ))}
-</select>
+          <select
+            value={form.room_type_id}
+            onChange={(e) => {
+              const selectedTypeId = e.target.value
+              const selectedType = roomTypes?.find((t) => String(t.id) === selectedTypeId)
+              setForm({
+                ...form,
+                room_type_id: selectedTypeId,
+                price: form.price === "" && selectedType ? String(selectedType.base_price) : form.price,
+              })
+            }}
+            required
+            className="border border-border rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">Pilih Tipe Kamar</option>
+            {roomTypes?.map((t) => (
+              <option key={t.id} value={t.id}>{t.name} — Rp{t.base_price.toLocaleString("id-ID")}</option>
+            ))}
+          </select>
 
           <input
             placeholder="Nomor Kamar (mis. A101)"
@@ -177,16 +204,16 @@ export default function StaffRooms() {
           />
 
           <div>
-  <input
-    type="number"
-    placeholder="Harga per bulan"
-    value={form.price}
-    onChange={(e) => setForm({ ...form, price: e.target.value })}
-    required
-    className="border border-border rounded-lg px-3 py-2 text-sm w-full"
-  />
-  <p className="text-xs text-text-secondary mt-1">Otomatis terisi dari harga dasar tipe kamar, bisa diubah sesuai kondisi kamar.</p>
-</div>
+            <input
+              type="number"
+              placeholder="Harga per bulan"
+              value={form.price}
+              onChange={(e) => setForm({ ...form, price: e.target.value })}
+              required
+              className="border border-border rounded-lg px-3 py-2 text-sm w-full"
+            />
+            <p className="text-xs text-text-secondary mt-1">Otomatis terisi dari harga dasar tipe kamar, bisa diubah sesuai kondisi kamar.</p>
+          </div>
 
           {createRoom.isError && (
             <p className="text-error text-xs sm:col-span-2">
@@ -204,8 +231,8 @@ export default function StaffRooms() {
         </form>
       )}
 
-     <div className="bg-card border border-border rounded-2xl overflow-x-auto">
-    <table className="w-full text-sm min-w-[640px]">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <table className="w-full text-sm">
           <thead className="bg-section text-text-secondary font-heading font-semibold">
             <tr>
               <th className="text-left px-5 py-3">Foto</th>
@@ -234,7 +261,12 @@ export default function StaffRooms() {
                   </td>
                   <td className="px-5 py-3 text-text">{r.room_number}</td>
                   <td className="px-5 py-3 text-text-secondary">{r.branch?.name}</td>
-                  <td className="px-5 py-3 text-text-secondary">Rp{r.price.toLocaleString("id-ID")}</td>
+                  <td className="px-5 py-3 text-text-secondary">
+                    Rp{r.price.toLocaleString("id-ID")}
+                    {r.is_discount_active && (
+                      <span className="block text-xs text-primary">→ Rp{r.final_price.toLocaleString("id-ID")}</span>
+                    )}
+                  </td>
                   <td className="px-5 py-3">
                     <span className={`text-xs font-heading font-semibold px-2.5 py-1 rounded-full ${r.status === "available" ? "bg-primary/10 text-primary" : "bg-section text-text-secondary"}`}>
                       {r.status}
@@ -250,7 +282,7 @@ export default function StaffRooms() {
                         <ImageIcon size={15} />
                       </button>
                       <button
-                        onClick={() => setEditingRoom({ id: r.id, room_number: r.room_number, price: String(r.price), status: r.status })}
+                        onClick={() => openEdit(r)}
                         className="p-1.5 text-text-secondary hover:text-primary transition-colors"
                       >
                         <Pencil size={15} />
@@ -267,15 +299,19 @@ export default function StaffRooms() {
               )
             })}
             {data?.rooms.length === 0 && (
-              <tr><td colSpan={6} className="text-center text-text-secondary py-8">Belum ada kamar di cabang ini.</td></tr>
+              <tr>
+                <td colSpan={6} className="text-center text-text-secondary py-8">
+                  Belum ada kamar di cabang ini.
+                </td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
 
       {editingRoom && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6">
-          <div className="bg-card rounded-2xl p-6 w-full max-w-sm relative">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-6 py-10 overflow-y-auto">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm relative my-auto">
             <button onClick={() => setEditingRoom(null)} className="absolute top-4 right-4 text-text-secondary hover:text-text">
               <X size={20} />
             </button>
@@ -304,6 +340,62 @@ export default function StaffRooms() {
                 <option value="booked">Booked</option>
                 <option value="maintenance">Maintenance</option>
               </select>
+
+              <div className="border-t border-border pt-3">
+                <p className="text-sm font-heading font-medium text-text mb-2">Diskon (opsional)</p>
+                <select
+                  value={editingRoom.discount_type}
+                  onChange={(e) => setEditingRoom({ ...editingRoom, discount_type: e.target.value })}
+                  className="w-full border border-border rounded-lg px-4 py-2.5 text-sm mb-2"
+                >
+                  <option value="">Tanpa diskon</option>
+                  <option value="percentage">Persentase (%)</option>
+                  <option value="fixed">Nominal Tetap (Rp)</option>
+                </select>
+
+                {editingRoom.discount_type && (
+                  <>
+                    <input
+                      type="number"
+                      placeholder={editingRoom.discount_type === "percentage" ? "Contoh: 15" : "Contoh: 300000"}
+                      value={editingRoom.discount_value}
+                      onChange={(e) => setEditingRoom({ ...editingRoom, discount_value: e.target.value })}
+                      className="w-full border border-border rounded-lg px-4 py-2.5 text-sm mb-2"
+                    />
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div>
+                        <label className="text-xs text-text-secondary">Mulai</label>
+                        <input
+                          type="date"
+                          value={editingRoom.discount_start_date}
+                          onChange={(e) => setEditingRoom({ ...editingRoom, discount_start_date: e.target.value })}
+                          className="w-full border border-border rounded-lg px-3 py-2 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs text-text-secondary">Sampai</label>
+                        <input
+                          type="date"
+                          value={editingRoom.discount_end_date}
+                          onChange={(e) => setEditingRoom({ ...editingRoom, discount_end_date: e.target.value })}
+                          className="w-full border border-border rounded-lg px-3 py-2 text-sm"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs text-text-secondary">Syarat minimal sewa (bulan, kosongkan jika tanpa syarat)</label>
+                      <input
+                        type="number"
+                        min={1}
+                        placeholder="Contoh: 3"
+                        value={editingRoom.discount_min_months}
+                        onChange={(e) => setEditingRoom({ ...editingRoom, discount_min_months: e.target.value })}
+                        className="w-full border border-border rounded-lg px-3 py-2 text-sm mt-1"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             <button

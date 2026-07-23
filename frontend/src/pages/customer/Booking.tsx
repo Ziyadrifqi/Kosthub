@@ -13,7 +13,28 @@ export default function Booking() {
   const [checkIn, setCheckIn] = useState("")
   const [duration, setDuration] = useState(1)
 
-  const totalPrice = room ? room.price * duration : 0
+  const calculateEffectivePrice = () => {
+    if (!room) return 0
+
+    const dateActive = room.is_discount_active || room.has_conditional_discount
+    if (!dateActive) return room.price
+
+    const minMonths = room.discount_min_months
+    const qualifiesForDiscount = !minMonths || duration >= minMonths
+    if (!qualifiesForDiscount) return room.price
+
+    if (room.discount_type === "percentage" && room.discount_value) {
+      return room.price - (room.price * room.discount_value) / 100
+    }
+    if (room.discount_type === "fixed" && room.discount_value) {
+      return Math.max(0, room.price - room.discount_value)
+    }
+    return room.price
+  }
+
+  const effectivePrice = calculateEffectivePrice()
+  const totalPrice = effectivePrice * duration
+  const isDiscountApplied = room ? effectivePrice < room.price : false
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,6 +80,17 @@ export default function Booking() {
             className="w-full border border-border rounded-sm px-4 py-2.5 text-sm bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           />
         </div>
+
+        {room.has_conditional_discount && !isDiscountApplied && (
+          <p className="text-xs text-brass bg-brass/10 border border-brass/30 rounded-sm px-3 py-2">
+            Tambah durasi jadi minimal {room.discount_min_months} bulan untuk dapat diskon.
+          </p>
+        )}
+        {isDiscountApplied && (
+          <p className="text-xs text-primary bg-primary/10 border border-primary/30 rounded-sm px-3 py-2">
+            Diskon diterapkan! Hemat Rp{((room.price - effectivePrice) * duration).toLocaleString("id-ID")}.
+          </p>
+        )}
 
         <div className="border-t border-border pt-4 flex justify-between items-center">
           <span className="text-text-secondary text-sm">Total Pembayaran</span>

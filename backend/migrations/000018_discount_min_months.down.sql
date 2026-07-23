@@ -1,0 +1,1 @@
+ALTER TABLE rooms DROP COLUMN IF EXISTS discount_min_months;

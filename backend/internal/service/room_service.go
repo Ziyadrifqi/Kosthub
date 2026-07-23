@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"github.com/Ziyadrifqi/kosthub/backend/internal/models"
 	"github.com/Ziyadrifqi/kosthub/backend/internal/repository"
 )
@@ -90,9 +92,14 @@ func (s *RoomService) CreateRoom(input CreateRoomInput) (*models.Room, error) {
 }
 
 type UpdateRoomInput struct {
-	RoomNumber string
-	Price      float64
-	Status     string
+	RoomNumber        string
+	Price             float64
+	Status            string
+	DiscountType      *string
+	DiscountValue     *float64
+	DiscountStartDate *time.Time
+	DiscountEndDate   *time.Time
+	DiscountMinMonths *int
 }
 
 func (s *RoomService) UpdateRoom(id uint, input UpdateRoomInput) (*models.Room, error) {
@@ -104,10 +111,17 @@ func (s *RoomService) UpdateRoom(id uint, input UpdateRoomInput) (*models.Room, 
 	room.RoomNumber = input.RoomNumber
 	room.Price = input.Price
 	room.Status = input.Status
+	room.DiscountType = input.DiscountType
+	room.DiscountValue = input.DiscountValue
+	room.DiscountStartDate = input.DiscountStartDate
+	room.DiscountEndDate = input.DiscountEndDate
+	room.DiscountMinMonths = input.DiscountMinMonths
 
 	if err := s.roomRepo.Update(room); err != nil {
 		return nil, err
 	}
+
+	room.CalculateFinalPrice()
 	return room, nil
 }
 

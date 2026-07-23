@@ -25,6 +25,14 @@ export interface Room {
   facilities?: Facility[]
   created_at: string
    is_favorited?: boolean
+ discount_type?: "percentage" | "fixed"
+  discount_value?: number
+  discount_start_date?: string
+  discount_end_date?: string
+  final_price: number
+  is_discount_active: boolean
+discount_min_months?: number
+  has_conditional_discount: boolean
 }
 
 export interface RoomListResponse {
