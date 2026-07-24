@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useAuthStore } from "@/store/authStore"
 import { useMyChatRoom, useChatHistory, useSetChatBranch } from "@/hooks/useChat"
 import { useChatSocket } from "@/hooks/useChatSocket"
-import { branches } from "@/lib/branches"
+import { useBranches } from "@/hooks/useBranches"
 import { formatChatTime, formatChatDateSeparator, isDifferentDay } from "@/lib/dateUtils"
 
 export function ChatWidget() {
@@ -21,6 +21,7 @@ export function ChatWidget() {
   const { data: history } = useChatHistory(room?.id)
   const { messages, setMessages, connected, sendMessage } = useChatSocket(open ? room?.id ?? null : null)
   const setChatBranch = useSetChatBranch()
+  const { data: branches } = useBranches()
 
   useEffect(() => {
     if (history) {
@@ -82,9 +83,9 @@ export function ChatWidget() {
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center bg-paper">
                 <p className="text-sm text-text mb-3">Pertanyaanmu untuk cabang mana?</p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {branches.map((b) => (
+                  {branches?.map((b) => (
                     <button
-                      key={b.code}
+                      key={b.id}
                       onClick={() => setChatBranch.mutate(b.id)}
                       disabled={setChatBranch.isPending}
                       className="text-xs font-heading font-medium border border-border rounded-full px-3 py-1.5 hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
@@ -96,37 +97,37 @@ export function ChatWidget() {
               </div>
             ) : (
               <>
-                <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-paper">
+                <div className="flex-1 overflow-y-auto p-3 space-y-1 bg-paper">
                   {messages.map((m, i) => {
-  const isMine = m.sender_id === user?.id
-  const showDateSeparator = i === 0 || isDifferentDay(messages[i - 1].created_at, m.created_at)
+                    const isMine = m.sender_id === user?.id
+                    const showDateSeparator = i === 0 || isDifferentDay(messages[i - 1].created_at, m.created_at)
 
-  return (
-    <div key={m.id ?? i}>
-      {showDateSeparator && (
-        <div className="flex justify-center my-3">
-          <span className="text-[10px] font-mono uppercase tracking-wide text-text-secondary bg-section px-2.5 py-1 rounded-full">
-            {formatChatDateSeparator(m.created_at)}
-          </span>
-        </div>
-      )}
-      <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-        <div className={`max-w-[75%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
-          <div
-            className={`px-3 py-2 rounded-sm text-sm ${
-              isMine ? "bg-primary text-paper" : "bg-card border border-border text-text"
-            }`}
-          >
-            {m.message}
-          </div>
-          <span className="text-[10px] font-mono text-text-secondary mt-1 px-1">
-            {formatChatTime(m.created_at)}
-          </span>
-        </div>
-      </div>
-    </div>
-  )
-})}
+                    return (
+                      <div key={m.id ?? i}>
+                        {showDateSeparator && (
+                          <div className="flex justify-center my-3">
+                            <span className="text-[10px] font-mono uppercase tracking-wide text-text-secondary bg-section px-2.5 py-1 rounded-full">
+                              {formatChatDateSeparator(m.created_at)}
+                            </span>
+                          </div>
+                        )}
+                        <div className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
+                          <div className={`max-w-[75%] flex flex-col ${isMine ? "items-end" : "items-start"}`}>
+                            <div
+                              className={`px-3 py-2 rounded-sm text-sm ${
+                                isMine ? "bg-primary text-paper" : "bg-card border border-border text-text"
+                              }`}
+                            >
+                              {m.message}
+                            </div>
+                            <span className="text-[10px] font-mono text-text-secondary mt-1 px-1">
+                              {formatChatTime(m.created_at)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
                   <div ref={bottomRef} />
                 </div>
 

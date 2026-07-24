@@ -4,8 +4,10 @@ import { UploadCloud, CheckCircle2, Landmark, Copy } from "lucide-react"
 import { useBookingDetail, useUploadProof } from "@/hooks/useBookings"
 import { CountdownBadge } from "@/components/CountdownBadge"
 import { useActiveBankAccounts } from "@/hooks/useBankAccounts"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function PaymentUpload() {
+  usePageTitle("Upload Bukti Transfer")
   const { bookingId } = useParams()
   const navigate = useNavigate()
   const { data: booking } = useBookingDetail(bookingId ?? "")

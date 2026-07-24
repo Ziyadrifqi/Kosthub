@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { branches } from "@/lib/branches"
+import { useBranches } from "@/hooks/useBranches"
 
 const columns = [
   {
@@ -32,6 +32,8 @@ const columns = [
 ]
 
 export function Footer() {
+  const { data: branches } = useBranches()
+
   return (
     <footer className="border-t border-border bg-ink text-paper">
       <div className="max-w-6xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-6 gap-8">
@@ -48,9 +50,9 @@ export function Footer() {
         <div>
           <h4 className="font-mono text-xs uppercase tracking-wide text-paper/50 mb-3">Cabang</h4>
           <ul className="space-y-2">
-            {branches.map((b) => (
-              <li key={b.code}>
-                <Link to={`/rooms?branch=${b.code}`} className="text-sm text-paper/80 hover:text-brass transition-colors">
+            {branches?.map((b) => (
+              <li key={b.id}>
+                <Link to={`/rooms?branch=${b.id}`} className="text-sm text-paper/80 hover:text-brass transition-colors">
                   {b.name}
                 </Link>
               </li>

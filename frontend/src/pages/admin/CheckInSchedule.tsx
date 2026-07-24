@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { CalendarCheck, MessageCircle, X } from "lucide-react"
 import { api } from "@/lib/api"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 interface CheckInBooking {
   id: string
@@ -11,6 +12,7 @@ interface CheckInBooking {
 }
 
 export default function CheckInSchedule() {
+  usePageTitle("Jadwal Check-in")
   const queryClient = useQueryClient()
   const { data } = useQuery({
     queryKey: ["upcoming-checkins"],

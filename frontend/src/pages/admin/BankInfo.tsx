@@ -8,10 +8,12 @@ import {
   useDeleteBankAccount,
   type BankAccount,
 } from "@/hooks/useBankAccounts"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 const emptyForm = { bank_name: "", account_number: "", account_holder: "", note: "" }
 
 export default function BankInfo() {
+  usePageTitle("Rekening Pembayaran")
   const { data: accounts } = useAllBankAccounts()
   const createAccount = useCreateBankAccount()
   const updateAccount = useUpdateBankAccount()

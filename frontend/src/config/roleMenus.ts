@@ -14,6 +14,7 @@ import {
    UserPlus,
    CalendarCheck,
     Landmark,
+    MapPinned,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -47,6 +48,7 @@ owner: [
 ],
 super_admin: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
+  { label: "Kelola Cabang", to: "/admin/branches", icon: MapPinned },
   { label: "Kelola Gedung", to: "/admin/buildings", icon: Building2 },
   { label: "Tipe Kamar", to: "/admin/room-types", icon: Layers },
   { label: "Kelola Konten", to: "/admin/content", icon: FileText },

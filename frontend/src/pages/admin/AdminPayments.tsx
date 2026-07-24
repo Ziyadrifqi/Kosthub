@@ -2,8 +2,10 @@ import { useState } from "react"
 import { CheckCircle2, XCircle, ImageOff } from "lucide-react"
 import { usePendingPayments, useVerifyPayment } from "@/hooks/useAdminPayments"
 import { RejectModal } from "@/components/admin/RejectModal"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function AdminPayments() {
+  usePageTitle("Verifikasi Pembayaran")
   const { data, isLoading } = usePendingPayments()
   const verifyPayment = useVerifyPayment()
   const [rejectingId, setRejectingId] = useState<string | null>(null)

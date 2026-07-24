@@ -17,22 +17,26 @@ type CreateBuildingInput struct {
 	BranchID   uint
 	Name       string
 	TotalFloor int
+	Latitude   *float64
+	Longitude  *float64
 }
 
 func (s *BuildingService) Create(input CreateBuildingInput) (*models.Building, error) {
-	b := &models.Building{BranchID: input.BranchID, Name: input.Name, TotalFloor: input.TotalFloor}
+	b := &models.Building{
+		BranchID: input.BranchID, Name: input.Name, TotalFloor: input.TotalFloor,
+		Latitude: input.Latitude, Longitude: input.Longitude,
+	}
 	if err := s.repo.Create(b); err != nil {
 		return nil, err
 	}
 	return b, nil
 }
-func (s *BuildingService) GetByID(id uint) (*models.Building, error) {
-	return s.repo.FindByID(id)
-}
 
 type UpdateBuildingInput struct {
 	Name       string
 	TotalFloor int
+	Latitude   *float64
+	Longitude  *float64
 }
 
 func (s *BuildingService) Update(id uint, input UpdateBuildingInput) (*models.Building, error) {
@@ -40,10 +44,10 @@ func (s *BuildingService) Update(id uint, input UpdateBuildingInput) (*models.Bu
 	if err != nil {
 		return nil, err
 	}
-
 	building.Name = input.Name
 	building.TotalFloor = input.TotalFloor
-
+	building.Latitude = input.Latitude
+	building.Longitude = input.Longitude
 	if err := s.repo.Update(building); err != nil {
 		return nil, err
 	}
@@ -53,6 +57,11 @@ func (s *BuildingService) Update(id uint, input UpdateBuildingInput) (*models.Bu
 func (s *BuildingService) Delete(id uint) error {
 	return s.repo.SoftDelete(id)
 }
+
+func (s *BuildingService) GetByID(id uint) (*models.Building, error) {
+	return s.repo.FindByID(id)
+}
+
 func (s *BuildingService) GetByBranch(branchID uint) ([]models.Building, error) {
 	return s.repo.FindByBranchID(branchID)
 }

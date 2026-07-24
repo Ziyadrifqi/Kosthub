@@ -5,8 +5,10 @@ import { motion } from "framer-motion"
 import { Mail, CheckCircle2 } from "lucide-react"
 import { api } from "@/lib/api"
 import { fadeUpVariant } from "@/animations/framerVariants"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function ForgotPassword() {
+  usePageTitle("Lupa Kata Sandi")
   const [email, setEmail] = useState("")
 
   const forgotPassword = useMutation({

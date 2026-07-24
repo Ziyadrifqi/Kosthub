@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { CheckCircle2 } from "lucide-react"
 import { api } from "@/lib/api"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 const tabs = [
   {
@@ -44,6 +45,7 @@ const tabs = [
 ]
 
 export default function StaffContent() {
+  usePageTitle("Kelola Konten")
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState(tabs[0].id)
 

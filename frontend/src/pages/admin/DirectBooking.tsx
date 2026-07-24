@@ -4,8 +4,10 @@ import { CheckCircle2 } from "lucide-react"
 import { api } from "@/lib/api"
 import { useRooms } from "@/hooks/useRooms"
 import { useAuthStore } from "@/store/authStore"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function DirectBooking() {
+  usePageTitle("Booking Langsung")
   const { user } = useAuthStore()
   const queryClient = useQueryClient()
   const { data } = useRooms({ page: 1, limit: 50, status: "available", branch_id: user?.branch_id })

@@ -1,17 +1,21 @@
 import { useState } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { Loader2, MapPin, CheckCircle2, Star } from "lucide-react"
+import { useParams, useNavigate, Link } from "react-router-dom"
+import { Loader2, MapPin, CheckCircle2, Star, Navigation } from "lucide-react"
 import { useRoomDetail } from "@/hooks/useRooms"
 import { useRoomReviews, useCreateReview } from "@/hooks/useReviews"
 import { useAuthStore } from "@/store/authStore"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function RoomDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const token = useAuthStore((s) => s.token)
+
   const { data: room, isLoading, isError } = useRoomDetail(id ?? "")
   const { data: reviewData } = useRoomReviews(Number(id))
   const createReview = useCreateReview(Number(id))
+
+  usePageTitle(room ? `Kamar ${room.room_number}` : "Detail Kamar")
 
   const apiOrigin = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ?? ""
 
@@ -58,6 +62,15 @@ export default function RoomDetail() {
           <p className="flex items-center gap-1 text-text-secondary mt-2">
             <MapPin size={16} /> {room.branch?.name}, {room.branch?.city}
           </p>
+
+          {room.building_id && (
+            <Link
+              to={`/map?building=${room.building_id}`}
+              className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mt-1"
+            >
+              <Navigation size={13} /> Lihat lokasi di peta
+            </Link>
+          )}
 
           {room.is_discount_active ? (
             <div className="mt-6">

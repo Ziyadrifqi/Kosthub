@@ -39,8 +39,8 @@ import EndingSoon from "@/pages/admin/EndingSoon"
 import DirectBooking from "@/pages/admin/DirectBooking"
 import CheckInSchedule from "@/pages/admin/CheckInSchedule"
 import BankInfo from "@/pages/admin/BankInfo"
-
-
+import SuperAdminBranches from "@/pages/admin/SuperAdminBranches"
+import BranchMap from "@/pages/public/BranchMap"
 
 function App() {
   useIdleLogout()
@@ -65,6 +65,7 @@ function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/map" element={<BranchMap />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/booking/:roomId" element={<Booking />} />
@@ -95,6 +96,7 @@ function App() {
   <Route path="/admin/buildings" element={<StaffBuildings />} />
   <Route path="/admin/room-types" element={<RoomTypes />} />
   <Route path="/admin/content" element={<StaffContent />} />
+  <Route path="/admin/branches" element={<SuperAdminBranches />} />
 </Route>
 
           <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { CalendarClock } from "lucide-react"
 import { api } from "@/lib/api"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 interface EndingBooking {
   id: string
@@ -11,6 +12,7 @@ interface EndingBooking {
 }
 
 export default function EndingSoon() {
+  usePageTitle("Kamar Akan Kosong")
   const { data } = useQuery({
     queryKey: ["ending-soon"],
     queryFn: async () => {

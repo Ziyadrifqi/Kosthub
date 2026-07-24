@@ -7,6 +7,7 @@ import { useChatSocket } from "@/hooks/useChatSocket"
 import { useAuthStore } from "@/store/authStore"
 import { formatChatTime, formatChatDateSeparator, isDifferentDay } from "@/lib/dateUtils"
 import { useQueryClient } from "@tanstack/react-query"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 interface ChatRoomListItem {
   id: string
@@ -17,6 +18,7 @@ interface ChatRoomListItem {
 }
 
 export default function AdminChat() {
+  usePageTitle("Live Chat")
   const user = useAuthStore((s) => s.user)
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const [text, setText] = useState("")

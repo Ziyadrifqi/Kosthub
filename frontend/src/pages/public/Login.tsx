@@ -6,10 +6,12 @@ import { KeyRound } from "lucide-react"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/authStore"
 import { fadeUpVariant } from "@/animations/framerVariants"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 const ADMIN_ROLES = ["staff", "owner", "super_admin"]
 
 export default function Login() {
+  usePageTitle("Login")
   const navigate = useNavigate()
   const location = useLocation()
   const idleReason = (location.state as { reason?: string })?.reason === "idle"

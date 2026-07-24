@@ -3,8 +3,10 @@ import { CheckCircle2 } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { useUpdateProfile, useChangePassword } from "@/hooks/useProfile"
 import { Link } from "react-router-dom"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function Profile() {
+  usePageTitle("Profil Saya")
   const { user } = useAuthStore()
   const updateProfile = useUpdateProfile()
   const changePassword = useChangePassword()

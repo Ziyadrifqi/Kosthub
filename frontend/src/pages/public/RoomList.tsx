@@ -3,27 +3,30 @@ import { useSearchParams } from "react-router-dom"
 import { Search, ChevronDown, Loader2 } from "lucide-react"
 import { useRooms } from "@/hooks/useRooms"
 import { RoomCard } from "@/components/rooms/RoomCard"
-import { branches, getBranchIdByCode } from "@/lib/branches"
+import { useBranches } from "@/hooks/useBranches"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function RoomList() {
+  usePageTitle("Cari Kamar")
+
   const [searchParams, setSearchParams] = useSearchParams()
-  const branchCode = searchParams.get("branch") ?? ""
+  const branchParam = searchParams.get("branch") ?? ""
+  const { data: branches } = useBranches()
 
   const [page, setPage] = useState(1)
   const [searchInput, setSearchInput] = useState("")
   const [debouncedSearch, setDebouncedSearch] = useState("")
 
-  // debounce supaya tidak fetch API di tiap ketikan huruf
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(searchInput), 400)
     return () => clearTimeout(timer)
   }, [searchInput])
 
   useEffect(() => {
-    setPage(1) // reset ke halaman 1 tiap kali filter berubah
-  }, [branchCode, debouncedSearch])
+    setPage(1)
+  }, [branchParam, debouncedSearch])
 
-  const branchId = branchCode ? getBranchIdByCode(branchCode) : undefined
+  const branchId = branchParam ? Number(branchParam) : undefined
 
   const { data, isLoading, isError } = useRooms({
     page,
@@ -33,9 +36,9 @@ export default function RoomList() {
   })
   const rooms = data?.rooms ?? []
 
-  const handleBranchChange = (code: string) => {
-    if (code) {
-      setSearchParams({ branch: code })
+  const handleBranchChange = (id: string) => {
+    if (id) {
+      setSearchParams({ branch: id })
     } else {
       setSearchParams({})
     }
@@ -51,7 +54,6 @@ export default function RoomList() {
         </p>
       </div>
 
-      {/* Filter bar: search + pilih cabang */}
       <div className="flex flex-col sm:flex-row gap-3 mb-10">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
@@ -65,13 +67,13 @@ export default function RoomList() {
 
         <div className="relative sm:w-56">
           <select
-            value={branchCode}
+            value={branchParam}
             onChange={(e) => handleBranchChange(e.target.value)}
             className="w-full appearance-none border border-border rounded-sm px-4 py-2.5 text-sm bg-card focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           >
             <option value="">Semua cabang</option>
-            {branches.map((b) => (
-              <option key={b.code} value={b.code}>{b.name}</option>
+            {branches?.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
             ))}
           </select>
           <ChevronDown size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none" />

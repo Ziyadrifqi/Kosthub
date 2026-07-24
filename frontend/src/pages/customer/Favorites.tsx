@@ -1,7 +1,9 @@
 import { useMyFavorites } from "@/hooks/useFavorites"
 import { RoomCard } from "@/components/rooms/RoomCard"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function Favorites() {
+  usePageTitle("Favorit")
   const { data } = useMyFavorites()
 
   return (

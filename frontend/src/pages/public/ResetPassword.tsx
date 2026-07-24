@@ -5,8 +5,10 @@ import { motion } from "framer-motion"
 import { Lock, CheckCircle2, AlertCircle } from "lucide-react"
 import { api } from "@/lib/api"
 import { fadeUpVariant } from "@/animations/framerVariants"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function ResetPassword() {
+  usePageTitle("Reset Kata Sandi")
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const token = searchParams.get("token") ?? ""

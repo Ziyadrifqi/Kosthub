@@ -7,6 +7,8 @@ export interface Building {
   branch?: { id: number; name: string; city: string }
   name: string
   total_floor: number
+  latitude?: number
+  longitude?: number
   room_count: number
 }
 
@@ -44,18 +46,19 @@ export function useRoomTypes() {
 export function useCreateBuilding() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: { branch_id: number; name: string; total_floor: number }) => {
+    mutationFn: async (payload: { branch_id: number; name: string; total_floor: number; latitude?: number; longitude?: number }) => {
       const res = await api.post("/super-admin/buildings", payload)
       return res.data
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buildings"] }),
   })
 }
+
 export function useUpdateBuilding() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, name, total_floor }: { id: number; name: string; total_floor: number }) => {
-      const res = await api.patch(`/super-admin/buildings/${id}`, { name, total_floor })
+    mutationFn: async ({ id, ...payload }: { id: number; name: string; total_floor: number; latitude?: number; longitude?: number }) => {
+      const res = await api.patch(`/super-admin/buildings/${id}`, payload)
       return res.data
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buildings"] }),

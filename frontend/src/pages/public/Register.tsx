@@ -5,8 +5,10 @@ import { motion } from "framer-motion"
 import { KeyRound } from "lucide-react"
 import { api } from "@/lib/api"
 import { fadeUpVariant } from "@/animations/framerVariants"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function Register() {
+  usePageTitle("Register")
   const navigate = useNavigate()
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "", phone: "" })
   const passwordMismatch = form.confirmPassword.length > 0 && form.password !== form.confirmPassword

@@ -1,6 +1,8 @@
 import { useSiteContent } from "@/hooks/useSiteContent"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function Help() {
+  usePageTitle("Bantuan")
   const { data: content } = useSiteContent()
 
   return (

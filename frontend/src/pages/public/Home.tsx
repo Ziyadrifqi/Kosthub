@@ -6,8 +6,10 @@ import { FeatureGrid } from "@/components/home/FeatureGrid"
 import { Testimonial } from "@/components/home/Testimonial"
 import { LargeTestimonial } from "@/components/home/LargeTestimonial"
 import { CtaBanner } from "@/components/home/CtaBanner"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function Home() {
+  usePageTitle("Beranda")
   return (
     <>
       <Hero />

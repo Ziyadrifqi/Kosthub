@@ -17,9 +17,11 @@ func NewBuildingHandler(s *service.BuildingService) *BuildingHandler {
 }
 
 type createBuildingRequest struct {
-	BranchID   uint   `json:"branch_id" binding:"required"`
-	Name       string `json:"name" binding:"required"`
-	TotalFloor int    `json:"total_floor"`
+	BranchID   uint     `json:"branch_id" binding:"required"`
+	Name       string   `json:"name" binding:"required"`
+	TotalFloor int      `json:"total_floor"`
+	Latitude   *float64 `json:"latitude"`
+	Longitude  *float64 `json:"longitude"`
 }
 
 func (h *BuildingHandler) Create(c *gin.Context) {
@@ -39,7 +41,11 @@ func (h *BuildingHandler) Create(c *gin.Context) {
 	}
 
 	building, err := h.service.Create(service.CreateBuildingInput{
-		BranchID: req.BranchID, Name: req.Name, TotalFloor: req.TotalFloor,
+		BranchID:   req.BranchID,
+		Name:       req.Name,
+		TotalFloor: req.TotalFloor,
+		Latitude:   req.Latitude,
+		Longitude:  req.Longitude,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create building"})
@@ -75,8 +81,10 @@ func (h *BuildingHandler) List(c *gin.Context) {
 }
 
 type updateBuildingRequest struct {
-	Name       string `json:"name" binding:"required"`
-	TotalFloor int    `json:"total_floor" binding:"required,gt=0"`
+	Name       string   `json:"name" binding:"required"`
+	TotalFloor int      `json:"total_floor" binding:"required,gt=0"`
+	Latitude   *float64 `json:"latitude"`
+	Longitude  *float64 `json:"longitude"`
 }
 
 // PATCH /api/super-admin/buildings/:id
@@ -94,7 +102,10 @@ func (h *BuildingHandler) Update(c *gin.Context) {
 	}
 
 	building, err := h.service.Update(uint(id), service.UpdateBuildingInput{
-		Name: req.Name, TotalFloor: req.TotalFloor,
+		Name:       req.Name,
+		TotalFloor: req.TotalFloor,
+		Latitude:   req.Latitude,
+		Longitude:  req.Longitude,
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update building"})

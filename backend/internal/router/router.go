@@ -27,6 +27,7 @@ func Setup(
 	roomImageHandler *handler.RoomImageHandler,
 	cancellationHandler *handler.CancellationHandler,
 	bankAccountHandler *handler.BankAccountHandler,
+	branchHandler *handler.BranchHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -68,6 +69,7 @@ func Setup(
 		api.GET("/bank-accounts", bankAccountHandler.ListActive)
 		api.GET("/buildings", buildingHandler.List)
 		api.GET("/room-types", roomTypeHandler.List)
+		api.GET("/branches", branchHandler.List)
 
 		// ===== WAJIB LOGIN =====
 		protected := api.Group("/")
@@ -176,6 +178,10 @@ func Setup(
 
 				superAdmin.PATCH("/room-types/:id", roomTypeHandler.Update)
 				superAdmin.DELETE("/room-types/:id", roomTypeHandler.Delete)
+
+				superAdmin.POST("/branches", branchHandler.Create)
+				superAdmin.PATCH("/branches/:id", branchHandler.Update)
+				superAdmin.DELETE("/branches/:id", branchHandler.Delete)
 			}
 		}
 	}

@@ -1,0 +1,3 @@
+ALTER TABLE buildings DROP COLUMN IF EXISTS latitude;
+
+ALTER TABLE buildings DROP COLUMN IF EXISTS longitude;

@@ -3,8 +3,10 @@ import { useParams, useNavigate } from "react-router-dom"
 import { AlertCircle } from "lucide-react"
 import { useRoomDetail } from "@/hooks/useRooms"
 import { useCreateBooking } from "@/hooks/useBookings"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function Booking() {
+  usePageTitle("Booking Kamar")
   const { roomId } = useParams()
   const navigate = useNavigate()
   const { data: room } = useRoomDetail(roomId ?? "")

@@ -1,8 +1,10 @@
 import { useAuthStore } from "@/store/authStore"
 import { usePendingPayments } from "@/hooks/useAdminPayments"
 import { useReportSummary } from "@/hooks/useReports"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function AdminDashboard() {
+  usePageTitle("Dashboard")
   const { user } = useAuthStore()
   const role = user?.role?.name
 

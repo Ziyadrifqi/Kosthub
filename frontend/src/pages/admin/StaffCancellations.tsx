@@ -1,7 +1,9 @@
 import { CheckCircle2, XCircle } from "lucide-react"
 import { usePendingCancellations, useProcessCancellation } from "@/hooks/useCancellation"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function StaffCancellations() {
+  usePageTitle("Pembatalan")
   const { data } = usePendingCancellations()
   const process = useProcessCancellation()
 

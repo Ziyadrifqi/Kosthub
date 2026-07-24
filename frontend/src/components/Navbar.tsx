@@ -4,12 +4,13 @@ import { Menu, X } from "lucide-react"
 import { useAuthStore } from "@/store/authStore"
 import { NotificationBell } from "@/components/NotificationBell"
 import { ConfirmModal } from "@/components/ConfirmModal"
-import { branches } from "@/lib/branches"
+import { useBranches } from "@/hooks/useBranches"
 
 
 const navLinks = [
   { label: "Cari Kamar", to: "/rooms" },
   { label: "Bantuan", to: "/help" },
+  { label: "Peta Cabang", to: "/map" },
 ]
 
 export function Navbar() {
@@ -17,6 +18,7 @@ export function Navbar() {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const { data: branches } = useBranches()
   
   const handleLogout = () => {
     logout()
@@ -98,10 +100,10 @@ export function Navbar() {
           <div className="pt-3 border-t border-border">
             <p className="font-mono text-[10px] uppercase tracking-widest text-text-secondary mb-2">Cabang</p>
             <div className="flex flex-wrap gap-2">
-              {branches.map((b) => (
+            {branches?.map((b) => (
                 <Link
-                  key={b.code}
-                  to={`/rooms?branch=${b.code}`}
+                  key={b.id}
+                  to={`/rooms?branch=${b.id}`}
                   onClick={() => setOpen(false)}
                   className="text-xs font-mono border border-border rounded-sm px-2.5 py-1 hover:border-primary hover:text-primary transition-colors"
                 >

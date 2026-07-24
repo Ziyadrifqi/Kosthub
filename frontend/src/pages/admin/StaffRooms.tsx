@@ -1,12 +1,14 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Plus, Pencil, Trash2, X, ImageIcon } from "lucide-react"
+import { Plus, Pencil, Trash2, X, ImageIcon, AlertTriangle } from "lucide-react"
 import { useRooms } from "@/hooks/useRooms"
 import { useBuildings, useRoomTypes } from "@/hooks/useBuildingsAndTypes"
 import { api } from "@/lib/api"
 import { useAuthStore } from "@/store/authStore"
-import { branches } from "@/lib/branches"
+import { useBranches } from "@/hooks/useBranches"
 import { RoomPhotoModal } from "@/components/admin/RoomPhotoModal"
+import { usePageTitle } from "@/hooks/usePageTitle"
+
 
 interface EditingRoom {
   id: number
@@ -21,11 +23,13 @@ interface EditingRoom {
 }
 
 export default function StaffRooms() {
+  usePageTitle("Kelola Kamar")
   const { user } = useAuthStore()
   const isSuperAdmin = user?.role?.name === "super_admin"
 
   const myBranchId = user?.branch_id ?? undefined
-  const myBranch = branches.find((b) => b.id === myBranchId)
+const { data: branches } = useBranches()
+const myBranch = branches?.find((b) => b.id === myBranchId)
 
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
@@ -102,10 +106,17 @@ export default function StaffRooms() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rooms"] }),
   })
 
+  // room yang mau dihapus — dipakai buat munculin dialog konfirmasi custom
+  const [confirmDeleteRoom, setConfirmDeleteRoom] = useState<{ id: number; room_number: string } | null>(null)
+
   const handleDelete = (id: number, roomNumber: string) => {
-    if (confirm(`Yakin ingin menghapus kamar ${roomNumber}?`)) {
-      deleteRoom.mutate(id)
-    }
+    setConfirmDeleteRoom({ id, room_number: roomNumber })
+  }
+
+  const handleConfirmDeleteRoom = () => {
+    if (!confirmDeleteRoom) return
+    deleteRoom.mutate(confirmDeleteRoom.id)
+    setConfirmDeleteRoom(null)
   }
 
   const openEdit = (r: any) => {
@@ -150,9 +161,7 @@ export default function StaffRooms() {
               className="border border-border rounded-lg px-3 py-2 text-sm"
             >
               <option value="">Pilih Cabang</option>
-              {branches.map((b) => (
-                <option key={b.code} value={b.id}>{b.name}</option>
-              ))}
+              {branches?.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           ) : (
             <input
@@ -415,6 +424,38 @@ export default function StaffRooms() {
           roomNumber={managingPhotosFor.room_number}
           onClose={() => setManagingPhotosFor(null)}
         />
+      )}
+
+      {/* dialog konfirmasi hapus kamar custom, menggantikan native browser confirm() */}
+      {confirmDeleteRoom && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-6">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <div className="w-11 h-11 rounded-full bg-error/10 flex items-center justify-center mb-4">
+              <AlertTriangle size={20} className="text-error" />
+            </div>
+            <h4 className="font-heading font-bold text-base text-text mb-1.5">
+              Hapus kamar {confirmDeleteRoom.room_number}?
+            </h4>
+            <p className="text-sm text-text-secondary mb-5">
+              Kamar yang sudah dihapus tidak bisa dikembalikan lagi.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteRoom(null)}
+                className="flex-1 font-heading font-medium text-sm border border-border text-text rounded-lg py-2.5 hover:bg-section transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmDeleteRoom}
+                disabled={deleteRoom.isPending}
+                className="flex-1 font-heading font-medium text-sm bg-error text-white rounded-lg py-2.5 hover:bg-error/90 transition-colors disabled:opacity-60"
+              >
+                {deleteRoom.isPending ? "Menghapus..." : "Hapus"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

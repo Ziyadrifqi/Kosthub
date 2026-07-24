@@ -1,5 +1,5 @@
-import { useRef } from "react"
-import { X, Star, Trash2, UploadCloud, Loader2 } from "lucide-react"
+import { useRef, useState } from "react"
+import { X, Star, Trash2, UploadCloud, Loader2, AlertTriangle } from "lucide-react"
 import { useRoomImages, useUploadRoomImage, useDeleteRoomImage, useSetPrimaryImage } from "@/hooks/useRoomImages"
 
 const apiOrigin = import.meta.env.VITE_API_BASE_URL?.replace("/api", "") ?? ""
@@ -11,11 +11,20 @@ export function RoomPhotoModal({ roomId, roomNumber, onClose }: { roomId: number
   const setPrimary = useSetPrimaryImage()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // id foto yang mau dihapus — dipakai buat munculin dialog konfirmasi custom
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     uploadImage.mutate({ roomId, file })
     e.target.value = "" // reset supaya bisa upload file yang sama lagi kalau perlu
+  }
+
+  const handleConfirmDelete = () => {
+    if (confirmDeleteId == null) return
+    deleteImage.mutate({ roomId, imageId: confirmDeleteId })
+    setConfirmDeleteId(null)
   }
 
   return (
@@ -42,6 +51,9 @@ export function RoomPhotoModal({ roomId, roomNumber, onClose }: { roomId: number
             {uploadImage.isPending ? "Mengunggah..." : "Klik untuk upload foto"}
           </span>
         </button>
+        <p className="text-xs text-text-secondary text-center mt-2">
+          Rekomendasi: foto landscape, min. 1200×900px, maks. 5MB (JPG/PNG/WebP)
+        </p>
 
         {isLoading && <p className="text-center text-text-secondary text-sm mt-6">Memuat foto...</p>}
 
@@ -68,7 +80,7 @@ export function RoomPhotoModal({ roomId, roomNumber, onClose }: { roomId: number
                     </button>
                   )}
                   <button
-                    onClick={() => confirm("Hapus foto ini?") && deleteImage.mutate({ roomId, imageId: img.id })}
+                    onClick={() => setConfirmDeleteId(img.id)}
                     title="Hapus foto"
                     className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center hover:scale-110 transition-transform"
                   >
@@ -84,6 +96,36 @@ export function RoomPhotoModal({ roomId, roomNumber, onClose }: { roomId: number
           <p className="text-center text-text-secondary text-sm mt-6">Belum ada foto untuk kamar ini.</p>
         )}
       </div>
+
+      {/* dialog konfirmasi hapus custom, menggantikan native browser confirm() */}
+      {confirmDeleteId !== null && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] px-6">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-sm shadow-xl">
+            <div className="w-11 h-11 rounded-full bg-error/10 flex items-center justify-center mb-4">
+              <AlertTriangle size={20} className="text-error" />
+            </div>
+            <h4 className="font-heading font-bold text-base text-text mb-1.5">Hapus foto ini?</h4>
+            <p className="text-sm text-text-secondary mb-5">
+              Foto yang sudah dihapus tidak bisa dikembalikan lagi.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 font-heading font-medium text-sm border border-border text-text rounded-lg py-2.5 hover:bg-section transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deleteImage.isPending}
+                className="flex-1 font-heading font-medium text-sm bg-error text-white rounded-lg py-2.5 hover:bg-error/90 transition-colors disabled:opacity-60"
+              >
+                {deleteImage.isPending ? "Menghapus..." : "Hapus"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

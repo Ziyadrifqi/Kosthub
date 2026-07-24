@@ -1,7 +1,9 @@
 import { Mail, Phone, MapPin } from "lucide-react"
 import { useSiteContent } from "@/hooks/useSiteContent"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function Contact() {
+  usePageTitle("Hubungi Kami")
   const { data: content } = useSiteContent()
 
   return (

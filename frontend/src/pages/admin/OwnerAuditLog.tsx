@@ -1,10 +1,12 @@
 import { useState } from "react"
 import { CheckCircle2, XCircle } from "lucide-react"
 import { useAuditLogs } from "@/hooks/useAuditLogs"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 const LIMIT = 15
 
 export default function OwnerAuditLog() {
+  usePageTitle("Audit Log")
   const [action, setAction] = useState("")
   const [page, setPage] = useState(1)
   const { data, isLoading } = useAuditLogs(action, page)

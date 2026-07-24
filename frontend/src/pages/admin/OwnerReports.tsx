@@ -1,6 +1,8 @@
 import { useReportSummary } from "@/hooks/useReports"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function OwnerReports() {
+  usePageTitle("Laporan Revenue")
   const { data } = useReportSummary()
   if (!data) return null
 

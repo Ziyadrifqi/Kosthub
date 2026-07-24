@@ -7,8 +7,10 @@ import {
   useDeleteRoomType,
   type RoomType,
 } from "@/hooks/useBuildingsAndTypes"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 export default function RoomTypes() {
+  usePageTitle("Tipe Kamar")
   const { data: types } = useRoomTypes()
   const createRoomType = useCreateRoomType()
   const updateRoomType = useUpdateRoomType()

@@ -8,19 +8,30 @@ import {
   type Building,
 } from "@/hooks/useBuildingsAndTypes"
 import { useAuthStore } from "@/store/authStore"
-import { branches } from "@/lib/branches"
+import { useBranches } from "@/hooks/useBranches"
+import { usePageTitle } from "@/hooks/usePageTitle"
+
+interface BuildingForm {
+  name: string
+  total_floor: number
+  latitude: string
+  longitude: string
+}
+
+const emptyForm: BuildingForm = { name: "", total_floor: 1, latitude: "", longitude: "" }
 
 export default function StaffBuildings() {
+  usePageTitle("Kelola Gedung")
+
   const { user } = useAuthStore()
   const isSuperAdmin = user?.role?.name === "super_admin"
   const myBranchId = user?.branch_id
+  const { data: branches } = useBranches()
 
   const [selectedBranch, setSelectedBranch] = useState<number | undefined>(
     isSuperAdmin ? undefined : myBranchId
   )
 
-  // default enabled: true di hook, jadi tetap fetch semua gedung
-  // walau selectedBranch masih undefined (filter "Semua Cabang")
   const { data: buildings } = useBuildings(selectedBranch)
 
   const createBuilding = useCreateBuilding()
@@ -28,14 +39,12 @@ export default function StaffBuildings() {
   const deleteBuilding = useDeleteBuilding()
 
   const [showForm, setShowForm] = useState(false)
-  const [name, setName] = useState("")
-  const [totalFloor, setTotalFloor] = useState(1)
+  const [form, setForm] = useState<BuildingForm>(emptyForm)
   const [formBranch, setFormBranch] = useState<number | undefined>(isSuperAdmin ? undefined : myBranchId)
   const [search, setSearch] = useState("")
 
   const [editingBuilding, setEditingBuilding] = useState<Building | null>(null)
-  const [editName, setEditName] = useState("")
-  const [editFloor, setEditFloor] = useState(1)
+  const [editForm, setEditForm] = useState<BuildingForm>(emptyForm)
 
   const filteredBuildings = useMemo(() => {
     if (!buildings) return []
@@ -51,11 +60,16 @@ export default function StaffBuildings() {
     const branchId = isSuperAdmin ? formBranch : myBranchId
     if (!branchId) return
     createBuilding.mutate(
-      { branch_id: branchId, name, total_floor: totalFloor },
+      {
+        branch_id: branchId,
+        name: form.name,
+        total_floor: form.total_floor,
+        latitude: form.latitude ? Number(form.latitude) : undefined,
+        longitude: form.longitude ? Number(form.longitude) : undefined,
+      },
       {
         onSuccess: () => {
-          setName("")
-          setTotalFloor(1)
+          setForm(emptyForm)
           setShowForm(false)
         },
       }
@@ -64,15 +78,25 @@ export default function StaffBuildings() {
 
   const openEdit = (b: Building) => {
     setEditingBuilding(b)
-    setEditName(b.name)
-    setEditFloor(b.total_floor)
+    setEditForm({
+      name: b.name,
+      total_floor: b.total_floor,
+      latitude: b.latitude ? String(b.latitude) : "",
+      longitude: b.longitude ? String(b.longitude) : "",
+    })
   }
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingBuilding) return
     updateBuilding.mutate(
-      { id: editingBuilding.id, name: editName, total_floor: editFloor },
+      {
+        id: editingBuilding.id,
+        name: editForm.name,
+        total_floor: editForm.total_floor,
+        latitude: editForm.latitude ? Number(editForm.latitude) : undefined,
+        longitude: editForm.longitude ? Number(editForm.longitude) : undefined,
+      },
       { onSuccess: () => setEditingBuilding(null) }
     )
   }
@@ -88,18 +112,17 @@ export default function StaffBuildings() {
   }
 
   return (
-   <div className="p-4 sm:p-8">
-  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
-    <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-text">Kelola Gedung</h1>
-    <button
-      onClick={() => setShowForm(!showForm)}
-      className="flex items-center justify-center gap-2 font-heading font-medium text-sm bg-primary hover:bg-primary-hover text-white rounded-lg px-4 py-2 transition-colors w-full sm:w-auto"
-    >
-      <Plus size={16} /> Tambah Gedung
-    </button>
-  </div>
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-heading font-extrabold text-2xl text-text">Kelola Gedung</h1>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-2 font-heading font-medium text-sm bg-primary hover:bg-primary-hover text-white rounded-lg px-4 py-2 transition-colors"
+        >
+          <Plus size={16} /> Tambah Gedung
+        </button>
+      </div>
 
-      {/* Filter: pilih cabang (super_admin) + search */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         {isSuperAdmin && (
           <select
@@ -108,8 +131,8 @@ export default function StaffBuildings() {
             className="border border-border rounded-lg px-4 py-2.5 text-sm sm:w-56"
           >
             <option value="">Semua Cabang</option>
-            {branches.map((b) => (
-              <option key={b.code} value={b.id}>{b.name}</option>
+            {branches?.map((b) => (
+              <option key={b.id} value={b.id}>{b.name}</option>
             ))}
           </select>
         )}
@@ -135,26 +158,48 @@ export default function StaffBuildings() {
               className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
             >
               <option value="">Pilih Cabang untuk gedung ini</option>
-              {branches.map((b) => (
-                <option key={b.code} value={b.id}>{b.name}</option>
+              {branches?.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
               ))}
             </select>
           )}
           <input
             placeholder="Nama Gedung (mis. Gedung A)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
             required
             className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
           />
           <input
             type="number"
             placeholder="Jumlah Lantai"
-            value={totalFloor}
-            onChange={(e) => setTotalFloor(Number(e.target.value))}
+            value={form.total_floor}
+            onChange={(e) => setForm({ ...form, total_floor: Number(e.target.value) })}
             min={1}
             className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
           />
+
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="number"
+              step="any"
+              placeholder="Latitude (mis. -6.401)"
+              value={form.latitude}
+              onChange={(e) => setForm({ ...form, latitude: e.target.value })}
+              className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
+            />
+            <input
+              type="number"
+              step="any"
+              placeholder="Longitude (mis. 106.822)"
+              value={form.longitude}
+              onChange={(e) => setForm({ ...form, longitude: e.target.value })}
+              className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
+            />
+          </div>
+          <p className="text-xs text-text-secondary -mt-2">
+            Opsional, dipakai untuk peta interaktif. Buka Google Maps, klik kanan di lokasi gedung, klik koordinat yang muncul untuk menyalin.
+          </p>
 
           {createBuilding.isError && (
             <p className="text-error text-xs">Gagal menambah gedung. Pastikan semua data terisi benar.</p>
@@ -170,7 +215,7 @@ export default function StaffBuildings() {
         </form>
       )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredBuildings.map((b) => (
           <div key={b.id} className="bg-card border border-border rounded-2xl p-5">
             <div className="flex items-start justify-between mb-3">
@@ -184,6 +229,9 @@ export default function StaffBuildings() {
 
             <p className="font-heading font-semibold text-text">{b.name}</p>
             <p className="text-sm text-text-secondary mt-1">{b.total_floor} lantai</p>
+            {!b.latitude && (
+              <p className="text-xs text-warning mt-1">Lokasi belum diatur (tidak muncul di peta)</p>
+            )}
 
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
               <span className="flex items-center gap-1.5 text-sm text-text-secondary">
@@ -227,19 +275,37 @@ export default function StaffBuildings() {
 
             <form onSubmit={handleUpdate} className="space-y-3">
               <input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
+                value={editForm.name}
+                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                 placeholder="Nama Gedung"
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
               />
               <input
                 type="number"
-                value={editFloor}
-                onChange={(e) => setEditFloor(Number(e.target.value))}
+                value={editForm.total_floor}
+                onChange={(e) => setEditForm({ ...editForm, total_floor: Number(e.target.value) })}
                 placeholder="Jumlah Lantai"
                 min={1}
                 className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
               />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  step="any"
+                  placeholder="Latitude"
+                  value={editForm.latitude}
+                  onChange={(e) => setEditForm({ ...editForm, latitude: e.target.value })}
+                  className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
+                />
+                <input
+                  type="number"
+                  step="any"
+                  placeholder="Longitude"
+                  value={editForm.longitude}
+                  onChange={(e) => setEditForm({ ...editForm, longitude: e.target.value })}
+                  className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
+                />
+              </div>
 
               {updateBuilding.isError && (
                 <p className="text-error text-xs">Gagal menyimpan perubahan.</p>

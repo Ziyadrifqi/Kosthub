@@ -2,6 +2,7 @@ import { useState, useMemo } from "react"
 import { Link } from "react-router-dom"
 import { useMyBookings } from "@/hooks/useBookings"
 import { CountdownBadge } from "@/components/CountdownBadge"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 const statusLabel: Record<string, { text: string; class: string }> = {
   pending: { text: "Menunggu Pembayaran", class: "bg-brass/10 text-brass border-brass/30" },
@@ -18,6 +19,7 @@ const filters = [
 ]
 
 export default function MyBookings() {
+  usePageTitle("Booking Kamar Saya")
   const { data } = useMyBookings()
   const [filter, setFilter] = useState("active")
 

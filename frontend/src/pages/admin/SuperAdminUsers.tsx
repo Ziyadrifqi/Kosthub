@@ -2,7 +2,8 @@ import { useState, useEffect } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Search, UserX } from "lucide-react"
 import { api } from "@/lib/api"
-import { branches } from "@/lib/branches"
+import { useBranches } from "@/hooks/useBranches"
+import { usePageTitle } from "@/hooks/usePageTitle"
 
 interface UserRow {
   id: string
@@ -23,7 +24,10 @@ const roles = ["customer", "staff", "owner", "super_admin"]
 const LIMIT = 10
 
 export default function SuperAdminUsers() {
+  usePageTitle("Kelola User")
+
   const queryClient = useQueryClient()
+  const { data: branches } = useBranches()
   const [pendingBranch, setPendingBranch] = useState<Record<string, number | undefined>>({})
 
   const [page, setPage] = useState(1)
@@ -91,12 +95,11 @@ export default function SuperAdminUsers() {
   const totalPages = data ? Math.ceil(data.total / LIMIT) : 1
 
   return (
-  <div className="p-4 sm:p-8">
-  <h1 className="font-heading font-extrabold text-xl sm:text-2xl text-text mb-1">Kelola User & Role</h1>
-  <p className="text-text-secondary mb-6">
-    {data ? `${data.total} user terdaftar` : "Memuat..."}
-  </p>
-
+    <div className="p-8">
+      <h1 className="font-heading font-extrabold text-2xl text-text mb-1">Kelola User & Role</h1>
+      <p className="text-text-secondary mb-6">
+        {data ? `${data.total} user terdaftar` : "Memuat..."}
+      </p>
 
       <div className="relative mb-6 max-w-md">
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary" />
@@ -108,8 +111,8 @@ export default function SuperAdminUsers() {
         />
       </div>
 
-     <div className="bg-card border border-border rounded-2xl overflow-x-auto">
-    <table className="w-full text-sm min-w-[700px]">
+      <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <table className="w-full text-sm">
           <thead className="bg-section text-text-secondary font-heading font-semibold">
             <tr>
               <th className="text-left px-5 py-3">Nama</th>
@@ -159,8 +162,8 @@ export default function SuperAdminUsers() {
                           className="border border-border rounded-lg px-3 py-1.5 text-sm"
                         >
                           <option value="">Pilih cabang</option>
-                          {branches.map((b) => (
-                            <option key={b.code} value={b.id}>{b.name}</option>
+                          {branches?.map((b) => (
+                            <option key={b.id} value={b.id}>{b.name}</option>
                           ))}
                         </select>
                         {pendingBranch[u.id] !== undefined && (
@@ -191,8 +194,8 @@ export default function SuperAdminUsers() {
         </table>
       </div>
 
-     {data && totalPages > 1 && (
-  <div className="flex flex-wrap justify-center items-center gap-3 mt-6">
+      {data && totalPages > 1 && (
+        <div className="flex justify-center items-center gap-3 mt-6">
           <button
             disabled={page <= 1}
             onClick={() => setPage((p) => p - 1)}
@@ -200,9 +203,7 @@ export default function SuperAdminUsers() {
           >
             Sebelumnya
           </button>
-          <span className="text-sm text-text-secondary">
-            Halaman {page} dari {totalPages}
-          </span>
+          <span className="text-sm text-text-secondary">Halaman {page} dari {totalPages}</span>
           <button
             disabled={page >= totalPages}
             onClick={() => setPage((p) => p + 1)}

@@ -102,6 +102,10 @@ func main() {
 	bankAccountService := service.NewBankAccountService(bankAccountRepo)
 	bankAccountHandler := handler.NewBankAccountHandler(bankAccountService)
 
+	branchRepo := repository.NewBranchRepository(db)
+	branchService := service.NewBranchService(branchRepo)
+	branchHandler := handler.NewBranchHandler(branchService)
+
 	// ===== Router =====
 	r := router.Setup(
 		cfg,
@@ -122,6 +126,7 @@ func main() {
 		roomImageHandler,
 		cancellationHandler,
 		bankAccountHandler,
+		branchHandler,
 	)
 
 	// ===== Background Worker =====

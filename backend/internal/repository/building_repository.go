@@ -16,12 +16,18 @@ func NewBuildingRepository(db *gorm.DB) *BuildingRepository {
 func (r *BuildingRepository) Create(b *models.Building) error {
 	return r.db.Create(b).Error
 }
+
 func (r *BuildingRepository) FindByID(id uint) (*models.Building, error) {
 	var building models.Building
 	err := r.db.Preload("Branch").Where("id = ?", id).First(&building).Error
 	if err != nil {
 		return nil, err
 	}
+
+	var count int64
+	r.db.Model(&models.Room{}).Where("building_id = ?", building.ID).Count(&count)
+	building.RoomCount = int(count)
+
 	return &building, nil
 }
 
@@ -32,6 +38,7 @@ func (r *BuildingRepository) Update(b *models.Building) error {
 func (r *BuildingRepository) SoftDelete(id uint) error {
 	return r.db.Delete(&models.Building{}, id).Error
 }
+
 func (r *BuildingRepository) FindByBranchID(branchID uint) ([]models.Building, error) {
 	var buildings []models.Building
 	err := r.db.Preload("Branch").Where("branch_id = ?", branchID).Order("name asc").Find(&buildings).Error
