@@ -28,6 +28,7 @@ func Setup(
 	cancellationHandler *handler.CancellationHandler,
 	bankAccountHandler *handler.BankAccountHandler,
 	branchHandler *handler.BranchHandler,
+	extensionHandler *handler.ExtensionHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -114,6 +115,8 @@ func Setup(
 			protected.POST("/reviews", reviewHandler.CreateReview)
 			protected.PATCH("/chat/my-room/branch", chatHandler.SetMyRoomBranch)
 			protected.POST("/cancellation-requests", cancellationHandler.Create)
+			protected.POST("/extension-requests", extensionHandler.Create)
+			protected.POST("/extension-requests/:id/upload-proof", extensionHandler.UploadProof)
 
 			// ===== STAFF ONLY — operasional harian =====
 			staff := protected.Group("/staff")
@@ -143,6 +146,8 @@ func Setup(
 				staff.PATCH("/bookings/:id/reschedule", bookingHandler.Reschedule)
 				staff.PATCH("/bookings/:id/check-in", bookingHandler.MarkCheckedIn)
 
+				staff.GET("/extension-requests", extensionHandler.GetWaiting)
+				staff.PATCH("/extension-requests/:id", extensionHandler.Process)
 			}
 
 			// ===== OWNER & SUPER_ADMIN — pengawasan =====

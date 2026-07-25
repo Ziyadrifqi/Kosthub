@@ -15,6 +15,7 @@ import {
    CalendarCheck,
     Landmark,
     MapPinned,
+    CalendarPlus,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -39,6 +40,7 @@ staff: [
   { label: "Live Chat", to: "/admin/chat", icon: MessageCircle },
   { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
   { label: "Pembatalan", to: "/admin/cancellations", icon: UserX },
+  { label: "Perpanjangan Sewa", to: "/admin/extensions", icon: CalendarPlus },
 ],
 owner: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },

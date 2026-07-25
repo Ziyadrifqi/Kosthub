@@ -1,7 +1,9 @@
 import { useState, useMemo } from "react"
 import { Link } from "react-router-dom"
+import { AlertTriangle } from "lucide-react"
 import { useMyBookings } from "@/hooks/useBookings"
 import { CountdownBadge } from "@/components/CountdownBadge"
+import { ExtensionModal } from "@/components/ExtensionModal"
 import { usePageTitle } from "@/hooks/usePageTitle"
 
 const statusLabel: Record<string, { text: string; class: string }> = {
@@ -22,6 +24,13 @@ export default function MyBookings() {
   usePageTitle("Booking Kamar Saya")
   const { data } = useMyBookings()
   const [filter, setFilter] = useState("active")
+  const [extendingBooking, setExtendingBooking] = useState<NonNullable<typeof data>["bookings"][0] | null>(null)
+
+const daysUntilEnd = (b: NonNullable<typeof data>["bookings"][0]) => {
+  const end = new Date(b.check_in)
+  end.setMonth(end.getMonth() + b.duration_months)
+  return Math.ceil((end.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+}
 
   const filteredBookings = useMemo(() => {
     if (!data?.bookings) return []
@@ -112,10 +121,28 @@ export default function MyBookings() {
                   </Link>
                 )}
               </div>
+
+              {b.status === "confirmed" && daysUntilEnd(b) <= 5 && daysUntilEnd(b) >= 0 && (
+                <div className="mt-3 pt-3 border-t border-border flex items-center justify-between gap-3 bg-brass/10 -mx-5 -mb-5 px-5 py-3 rounded-b-md">
+                  <p className="flex items-center gap-2 text-xs text-brass">
+                    <AlertTriangle size={14} /> Masa sewa berakhir {daysUntilEnd(b)} hari lagi
+                  </p>
+                  <button
+                    onClick={() => setExtendingBooking(b)}
+                    className="text-xs font-heading font-medium bg-ink text-paper rounded-sm px-3 py-1.5 shrink-0"
+                  >
+                    Perpanjang
+                  </button>
+                </div>
+              )}
             </div>
           )
         })}
       </div>
+
+      {extendingBooking && (
+        <ExtensionModal booking={extendingBooking} onClose={() => setExtendingBooking(null)} />
+      )}
     </section>
   )
 }

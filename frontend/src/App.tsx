@@ -41,6 +41,7 @@ import CheckInSchedule from "@/pages/admin/CheckInSchedule"
 import BankInfo from "@/pages/admin/BankInfo"
 import SuperAdminBranches from "@/pages/admin/SuperAdminBranches"
 import BranchMap from "@/pages/public/BranchMap"
+import StaffExtensions from "@/pages/admin/StaffExtensions"
 
 function App() {
   useIdleLogout()
@@ -89,6 +90,7 @@ function App() {
   <Route path="/admin/ending-soon" element={<EndingSoon />} />
 <Route path="/admin/direct-booking" element={<DirectBooking />} />
 <Route path="/admin/checkin" element={<CheckInSchedule />} />
+<Route path="/admin/extensions" element={<StaffExtensions />} />
 </Route>
 
 <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>

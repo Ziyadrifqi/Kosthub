@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { api } from "@/lib/api"
+import { useAuthStore } from "@/store/authStore"
 import type { Booking } from "@/lib/types"
 
 export function useCreateBooking() {
@@ -17,12 +18,16 @@ export function useCreateBooking() {
 }
 
 export function useMyBookings() {
+  const token = useAuthStore((s) => s.token)
+  const hasHydrated = useAuthStore((s) => s.hasHydrated)
+
   return useQuery({
     queryKey: ["my-bookings"],
     queryFn: async () => {
       const res = await api.get<{ bookings: Booking[]; total: number }>("/bookings/my")
       return res.data
     },
+    enabled: hasHydrated && !!token,
   })
 }
 

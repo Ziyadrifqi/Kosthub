@@ -154,6 +154,16 @@ func (r *BookingRepository) CompleteExpiredLeases() (int, error) {
 
 	count := 0
 	for _, booking := range bookings {
+		// skip kalau masih ada pengajuan perpanjangan yang belum selesai diproses —
+		// beri kesempatan staff verifikasi dulu sebelum kamar "ditutup"
+		var pendingExt int64
+		r.db.Model(&models.ExtensionRequest{}).
+			Where("booking_id = ? AND status IN ?", booking.ID, []string{"pending_payment", "waiting_verification"}).
+			Count(&pendingExt)
+		if pendingExt > 0 {
+			continue
+		}
+
 		err := r.db.Transaction(func(tx *gorm.DB) error {
 			if err := tx.Model(&models.Booking{}).Where("id = ? AND status = ?", booking.ID, "confirmed").
 				Update("status", "completed").Error; err != nil {
@@ -277,4 +287,20 @@ func (r *BookingRepository) UpdateCheckInDate(id uuid.UUID, newDate time.Time) e
 func (r *BookingRepository) MarkCheckedIn(id uuid.UUID) error {
 	now := time.Now()
 	return r.db.Model(&models.Booking{}).Where("id = ?", id).Update("actual_check_in_at", now).Error
+}
+
+// FindNeedingExtensionReminder — booking confirmed yang tanggal habisnya PERSIS 5 hari
+// lagi, dan belum pernah dikirim reminder.
+func (r *BookingRepository) FindNeedingExtensionReminder() ([]models.Booking, error) {
+	var bookings []models.Booking
+	err := r.db.
+		Where("status = ? AND reminder_sent_at IS NULL", "confirmed").
+		Where("(check_in + (duration_months || ' months')::interval)::date = ?", time.Now().AddDate(0, 0, 5).Format("2006-01-02")).
+		Find(&bookings).Error
+	return bookings, err
+}
+
+func (r *BookingRepository) MarkReminderSent(id uuid.UUID) error {
+	now := time.Now()
+	return r.db.Model(&models.Booking{}).Where("id = ?", id).Update("reminder_sent_at", now).Error
 }

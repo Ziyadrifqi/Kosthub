@@ -173,3 +173,20 @@ func (s *BookingService) RescheduleCheckIn(id uuid.UUID, newDate time.Time) erro
 func (s *BookingService) MarkCheckedIn(id uuid.UUID) error {
 	return s.bookingRepo.MarkCheckedIn(id)
 }
+
+func (s *BookingService) SendExtensionReminders() (int, error) {
+	bookings, err := s.bookingRepo.FindNeedingExtensionReminder()
+	if err != nil {
+		return 0, err
+	}
+
+	count := 0
+	for _, b := range bookings {
+		s.notifService.Notify(b.UserID, "Masa Sewa Akan Berakhir",
+			"Masa sewamu berakhir dalam 5 hari. Mau perpanjang? Ajukan sekarang di halaman Booking Saya.", "warning")
+		if err := s.bookingRepo.MarkReminderSent(b.ID); err == nil {
+			count++
+		}
+	}
+	return count, nil
+}

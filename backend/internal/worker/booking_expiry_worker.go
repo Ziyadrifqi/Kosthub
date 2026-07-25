@@ -40,3 +40,19 @@ func StartLeaseCompletionWorker(bookingService *service.BookingService, interval
 		}
 	}()
 }
+
+func StartExtensionReminderWorker(bookingService *service.BookingService, interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	go func() {
+		for range ticker.C {
+			count, err := bookingService.SendExtensionReminders()
+			if err != nil {
+				log.Printf("⚠️  extension reminder worker error: %v", err)
+				continue
+			}
+			if count > 0 {
+				log.Printf("📅 extension reminder worker: %d pengingat perpanjangan terkirim", count)
+			}
+		}
+	}()
+}

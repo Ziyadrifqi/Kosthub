@@ -17,8 +17,10 @@ interface User {
 interface AuthState {
   token: string | null
   user: User | null
+  hasHydrated: boolean
   setAuth: (token: string, user: User) => void
   logout: () => void
+  setHasHydrated: (state: boolean) => void
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -26,9 +28,16 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       token: null,
       user: null,
+      hasHydrated: false,
       setAuth: (token, user) => set({ token, user }),
       logout: () => set({ token: null, user: null }),
+      setHasHydrated: (state) => set({ hasHydrated: state }),
     }),
-    { name: "kosthub-auth" } // disimpan di localStorage otomatis oleh middleware persist
+    {
+      name: "kosthub-auth",
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
+    }
   )
 )

@@ -21,6 +21,7 @@ type Booking struct {
 	CreatedAt       time.Time  `json:"created_at"`
 	UpdatedAt       time.Time  `json:"updated_at"`
 	ActualCheckInAt *time.Time `json:"actual_check_in_at"`
+	ReminderSentAt  *time.Time `json:"reminder_sent_at"`
 }
 
 func (Booking) TableName() string { return "bookings" }

@@ -106,6 +106,9 @@ func main() {
 	branchService := service.NewBranchService(branchRepo)
 	branchHandler := handler.NewBranchHandler(branchService)
 
+	extensionRepo := repository.NewExtensionRepository(db)
+	extensionService := service.NewExtensionService(extensionRepo, bookingRepo, roomRepo, notifService)
+	extensionHandler := handler.NewExtensionHandler(extensionService)
 	// ===== Router =====
 	r := router.Setup(
 		cfg,
@@ -127,11 +130,13 @@ func main() {
 		cancellationHandler,
 		bankAccountHandler,
 		branchHandler,
+		extensionHandler,
 	)
 
 	// ===== Background Worker =====
 	worker.StartBookingExpiryWorker(bookingService, 5*time.Minute)
-	worker.StartLeaseCompletionWorker(bookingService, 1*time.Hour) // cek tiap jam cukup, bukan hal darurat
+	worker.StartLeaseCompletionWorker(bookingService, 1*time.Hour)   // cek tiap jam cukup, bukan hal darurat
+	worker.StartExtensionReminderWorker(bookingService, 6*time.Hour) // cek 4x sehari cukup
 
 	log.Printf("server running on http://localhost:%s\n", cfg.AppPort)
 	if err := r.Run(":" + cfg.AppPort); err != nil {
