@@ -66,3 +66,42 @@ func (h *ReviewHandler) GetRoomReviews(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+// GET /api/reviews/featured — PUBLIK, dipakai homepage
+func (h *ReviewHandler) GetFeatured(c *gin.Context) {
+	reviews, err := h.reviewService.GetFeatured(6)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch featured reviews"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"reviews": reviews})
+}
+
+// GET /api/super-admin/reviews
+func (h *ReviewHandler) GetAllForAdmin(c *gin.Context) {
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+
+	result, err := h.reviewService.GetAllForAdmin(page, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch reviews"})
+		return
+	}
+	c.JSON(http.StatusOK, result)
+}
+
+// PATCH /api/super-admin/reviews/:id/featured
+func (h *ReviewHandler) ToggleFeatured(c *gin.Context) {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+
+	review, err := h.reviewService.ToggleFeatured(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to toggle"})
+		return
+	}
+	c.JSON(http.StatusOK, review)
+}

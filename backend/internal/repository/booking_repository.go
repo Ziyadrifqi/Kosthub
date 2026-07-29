@@ -203,8 +203,9 @@ type DirectBookingInput struct {
 	DurationMonths int
 	TotalPrice     float64
 	CreatedByStaff uuid.UUID
-	PaymentMethod  string // "cash" atau "manual_transfer"
+	PaymentMethod  string
 	PaymentNote    string
+	ProofURL       *string
 }
 
 func (r *BookingRepository) CreateDirectBookingTx(input DirectBookingInput) (*models.Booking, error) {
@@ -245,6 +246,7 @@ func (r *BookingRepository) CreateDirectBookingTx(input DirectBookingInput) (*mo
 			Method:    method,
 			Amount:    input.TotalPrice,
 			Status:    "verified",
+			ProofURL:  input.ProofURL,
 		}
 		if err := tx.Create(&payment).Error; err != nil {
 			return err

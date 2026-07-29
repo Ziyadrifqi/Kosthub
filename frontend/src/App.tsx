@@ -43,6 +43,7 @@ import SuperAdminBranches from "@/pages/admin/SuperAdminBranches"
 import BranchMap from "@/pages/public/BranchMap"
 import StaffExtensions from "@/pages/admin/StaffExtensions"
 import OwnerTransactions from "@/pages/admin/OwnerTransactions"
+import SuperAdminTestimonials from "@/pages/admin/SuperAdminTestimonials"
 
 function App() {
   useIdleLogout()
@@ -100,6 +101,7 @@ function App() {
   <Route path="/admin/room-types" element={<RoomTypes />} />
   <Route path="/admin/content" element={<StaffContent />} />
   <Route path="/admin/branches" element={<SuperAdminBranches />} />
+<Route path="/admin/testimonials" element={<SuperAdminTestimonials />} />
 </Route>
 
           <Route element={<RoleRoute allowedRoles={["owner", "super_admin"]} />}>

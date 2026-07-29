@@ -4,7 +4,7 @@ import { fadeUpVariant } from "@/animations/framerVariants"
 
 export function CtaBanner() {
   return (
-    <section className="px-6 pb-24 bg-section">
+    <section className="px-6 pt-0 pb-24 bg-section">
       <motion.div
         initial="hidden"
         whileInView="visible"

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { CheckCircle2, Info } from "lucide-react"
+import { CheckCircle2, Info, UploadCloud } from "lucide-react"
 import { api } from "@/lib/api"
 import { useRooms } from "@/hooks/useRooms"
 import { useAuthStore } from "@/store/authStore"
@@ -18,18 +18,23 @@ export default function DirectBooking() {
     customer_email: "", customer_name: "", customer_phone: "",
     payment_method: "cash", payment_note: "",
   })
+  const [proofFile, setProofFile] = useState<File | null>(null)
 
   const createDirect = useMutation({
     mutationFn: async () => {
-      await api.post("/staff/bookings/direct", {
-        room_id: Number(form.room_id),
-        check_in: form.check_in,
-        duration_months: form.duration_months,
-        customer_email: form.customer_email,
-        customer_name: form.customer_name,
-        customer_phone: form.customer_phone,
-        payment_method: form.payment_method,
-        payment_note: form.payment_note,
+      const formData = new FormData()
+      formData.append("room_id", form.room_id)
+      formData.append("check_in", form.check_in)
+      formData.append("duration_months", String(form.duration_months))
+      formData.append("customer_email", form.customer_email)
+      formData.append("customer_name", form.customer_name)
+      formData.append("customer_phone", form.customer_phone)
+      formData.append("payment_method", form.payment_method)
+      formData.append("payment_note", form.payment_note)
+      if (proofFile) formData.append("proof", proofFile)
+
+      await api.post("/staff/bookings/direct", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       })
     },
     onSuccess: () => {
@@ -39,6 +44,7 @@ export default function DirectBooking() {
         customer_email: "", customer_name: "", customer_phone: "",
         payment_method: "cash", payment_note: "",
       })
+      setProofFile(null)
     },
   })
 
@@ -104,7 +110,7 @@ export default function DirectBooking() {
           <div className="grid grid-cols-2 gap-2 mb-3">
             <button
               type="button"
-              onClick={() => setForm({ ...form, payment_method: "cash" })}
+              onClick={() => { setForm({ ...form, payment_method: "cash" }); setProofFile(null) }}
               className={`text-sm font-heading font-medium rounded-lg py-2.5 border transition-colors ${
                 form.payment_method === "cash" ? "bg-primary text-white border-primary" : "border-border text-text-secondary"
               }`}
@@ -121,20 +127,43 @@ export default function DirectBooking() {
               Transfer
             </button>
           </div>
+
           <input
             placeholder={form.payment_method === "cash" ? "Catatan (opsional)" : "Catatan (mis. Transfer BCA a.n. Budi, sudah dicek)"}
             value={form.payment_note}
             onChange={(e) => setForm({ ...form, payment_note: e.target.value })}
-            className="w-full border border-border rounded-lg px-4 py-2.5 text-sm"
+            className="w-full border border-border rounded-lg px-4 py-2.5 text-sm mb-3"
           />
+
+          {form.payment_method === "manual_transfer" && (
+  <label className="block border-2 border-dashed border-border rounded-xl p-5 text-center cursor-pointer hover:border-primary/50 transition-colors">
+    <input
+      type="file"
+      accept="image/*"
+      required
+      className="hidden"
+      onChange={(e) => setProofFile(e.target.files?.[0] ?? null)}
+    />
+    {proofFile ? (
+      <div className="flex flex-col items-center gap-1.5 text-primary">
+        <CheckCircle2 size={20} />
+        <span className="text-xs font-medium">{proofFile.name}</span>
+      </div>
+    ) : (
+      <div className="flex flex-col items-center gap-1.5 text-error">
+        <UploadCloud size={20} />
+        <span className="text-xs">Foto bukti transfer</span>
+      </div>
+    )}
+  </label>
+)}
         </div>
 
         <div className="flex items-start gap-2 bg-info/10 border border-info/30 rounded-lg p-3">
           <Info size={16} className="text-info shrink-0 mt-0.5" />
           <p className="text-xs text-text">
-            Setelah booking dibuat, sampaikan ke customer bahwa akun sudah otomatis dibuat dengan email di atas.
-            Untuk masuk, mereka bisa buka website KostHub → klik <strong>"Lupa Kata Sandi"</strong> → masukkan email yang sama untuk atur kata sandi sendiri.
-            Dari akun itu, mereka bisa lihat status booking, sisa masa sewa, dan ajukan perpanjangan kapan saja.
+            Sampaikan ke customer akun sudah otomatis dibuat dengan email di atas. Untuk masuk, mereka bisa klik
+            <strong> "Lupa Kata Sandi" </strong>di website dan gunakan email yang sama.
           </p>
         </div>
 

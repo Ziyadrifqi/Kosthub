@@ -17,6 +17,7 @@ import {
     MapPinned,
     CalendarPlus,
     Wallet as WalletIcon,
+    MessageSquareQuote,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -56,6 +57,7 @@ super_admin: [
   { label: "Kelola Gedung", to: "/admin/buildings", icon: Building2 },
   { label: "Tipe Kamar", to: "/admin/room-types", icon: Layers },
   { label: "Kelola Konten", to: "/admin/content", icon: FileText },
+  { label: "Kelola Testimonial", to: "/admin/testimonials", icon: MessageSquareQuote },
   { label: "Kelola User", to: "/admin/users", icon: Users },
 ],
 }

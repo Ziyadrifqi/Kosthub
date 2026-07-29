@@ -59,3 +59,24 @@ func (s *ReviewService) CanReview(userID uuid.UUID, roomID uint) (bool, error) {
 	}
 	return !hasReviewed, nil
 }
+
+func (s *ReviewService) GetFeatured(limit int) ([]models.Review, error) {
+	return s.reviewRepo.FindFeatured(limit)
+}
+
+type AdminReviewListOutput struct {
+	Reviews []models.Review `json:"reviews"`
+	Total   int64           `json:"total"`
+}
+
+func (s *ReviewService) GetAllForAdmin(page, limit int) (*AdminReviewListOutput, error) {
+	reviews, total, err := s.reviewRepo.FindAllForAdmin(page, limit)
+	if err != nil {
+		return nil, err
+	}
+	return &AdminReviewListOutput{Reviews: reviews, Total: total}, nil
+}
+
+func (s *ReviewService) ToggleFeatured(id uint) (*models.Review, error) {
+	return s.reviewRepo.ToggleFeatured(id)
+}

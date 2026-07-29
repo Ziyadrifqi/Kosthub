@@ -146,6 +146,7 @@ type CreateDirectBookingInput struct {
 	CreatedByStaff uuid.UUID
 	PaymentMethod  string
 	PaymentNote    string
+	ProofURL       *string
 }
 
 func (s *BookingService) CreateDirectBooking(input CreateDirectBookingInput) (*models.Booking, error) {
@@ -163,6 +164,7 @@ func (s *BookingService) CreateDirectBooking(input CreateDirectBookingInput) (*m
 		CreatedByStaff: input.CreatedByStaff,
 		PaymentMethod:  input.PaymentMethod,
 		PaymentNote:    input.PaymentNote,
+		ProofURL:       input.ProofURL,
 	})
 }
 func (s *BookingService) GetUpcomingCheckIns(branchID *uint) ([]models.Booking, error) {

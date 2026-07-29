@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -143,34 +145,69 @@ type createDirectBookingRequest struct {
 	PaymentNote   string `json:"payment_note"`
 }
 
-// POST /api/staff/bookings/direct — untuk booking walk-in
+// POST /api/staff/bookings/direct — multipart/form-data
 func (h *BookingHandler) CreateDirectBooking(c *gin.Context) {
-	var req createDirectBookingRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	roomID, err := strconv.Atoi(c.PostForm("room_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "room_id tidak valid"})
 		return
 	}
 
-	checkIn, err := time.Parse("2006-01-02", req.CheckIn)
+	checkIn, err := time.Parse("2006-01-02", c.PostForm("check_in"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "format tanggal salah, gunakan YYYY-MM-DD"})
 		return
 	}
 
+	durationMonths, err := strconv.Atoi(c.PostForm("duration_months"))
+	if err != nil || durationMonths < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "durasi tidak valid"})
+		return
+	}
+
+	customerEmail := c.PostForm("customer_email")
+	customerName := c.PostForm("customer_name")
+	customerPhone := c.PostForm("customer_phone")
+	paymentMethod := c.PostForm("payment_method")
+	paymentNote := c.PostForm("payment_note")
+
+	if paymentMethod != "cash" && paymentMethod != "manual_transfer" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "metode pembayaran tidak valid"})
+		return
+	}
+
 	staffID, _ := uuid.Parse(c.MustGet("user_id").(string))
 
-	// cari user existing dulu, kalau tidak ada bikin akun baru otomatis
-	customerID, err := h.bookingService.FindOrCreateCustomer(req.CustomerEmail, req.CustomerName, req.CustomerPhone)
+	customerID, err := h.bookingService.FindOrCreateCustomer(customerEmail, customerName, customerPhone)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "gagal memproses data customer"})
 		return
 	}
 
+	// file bukti transfer WAJIB kalau metodenya transfer
+	var proofURL *string
+	file, fileErr := c.FormFile("proof")
+	if paymentMethod == "manual_transfer" && fileErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "bukti transfer wajib diupload untuk metode transfer"})
+		return
+	}
+	if fileErr == nil {
+		ext := filepath.Ext(file.Filename)
+		filename := fmt.Sprintf("direct_%d%s", time.Now().UnixNano(), ext)
+		savePath := filepath.Join("uploads", "payments", filename)
+		if err := c.SaveUploadedFile(file, savePath); err == nil {
+			url := "/uploads/payments/" + filename
+			proofURL = &url
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "gagal menyimpan bukti transfer"})
+			return
+		}
+	}
+
 	booking, err := h.bookingService.CreateDirectBooking(service.CreateDirectBookingInput{
-		UserID: customerID, RoomID: req.RoomID, CheckIn: checkIn,
-		DurationMonths: req.DurationMonths, CreatedByStaff: staffID,
-		PaymentMethod: req.PaymentMethod,
-		PaymentNote:   req.PaymentNote,
+		UserID: customerID, RoomID: uint(roomID), CheckIn: checkIn,
+		DurationMonths: durationMonths, CreatedByStaff: staffID,
+		PaymentMethod: paymentMethod, PaymentNote: paymentNote, ProofURL: proofURL,
 	})
 	if err != nil {
 		if err == repository.ErrRoomNotAvailable {

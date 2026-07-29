@@ -72,6 +72,7 @@ func Setup(
 		api.GET("/buildings", buildingHandler.List)
 		api.GET("/room-types", roomTypeHandler.List)
 		api.GET("/branches", branchHandler.List)
+		api.GET("/reviews/featured", reviewHandler.GetFeatured)
 
 		// ===== WAJIB LOGIN =====
 		protected := api.Group("/")
@@ -190,6 +191,9 @@ func Setup(
 				superAdmin.POST("/branches", branchHandler.Create)
 				superAdmin.PATCH("/branches/:id", branchHandler.Update)
 				superAdmin.DELETE("/branches/:id", branchHandler.Delete)
+
+				superAdmin.GET("/reviews", reviewHandler.GetAllForAdmin)
+				superAdmin.PATCH("/reviews/:id/featured", reviewHandler.ToggleFeatured)
 			}
 		}
 	}
