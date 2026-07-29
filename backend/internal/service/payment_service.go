@@ -105,3 +105,32 @@ func (s *PaymentService) GetAllAuditLogs(action string, page, limit int) (*Audit
 
 	return &AuditLogListOutput{Logs: logs, Total: total, Page: page, Limit: limit}, nil
 }
+
+type TransactionListOutput struct {
+	Payments []models.Payment `json:"payments"`
+	Total    int64            `json:"total"`
+	SumTotal float64          `json:"sum_total"`
+	Page     int              `json:"page"`
+	Limit    int              `json:"limit"`
+}
+
+func (s *PaymentService) GetTransactions(method string, branchID *uint, page, limit int) (*TransactionListOutput, error) {
+	result, err := s.paymentRepo.FindVerifiedTransactions(repository.TransactionFilter{
+		Method: method, BranchID: branchID, Page: page, Limit: limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+
+	return &TransactionListOutput{
+		Payments: result.Payments, Total: result.Total, SumTotal: result.SumTotal,
+		Page: page, Limit: limit,
+	}, nil
+}

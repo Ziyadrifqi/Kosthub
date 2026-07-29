@@ -42,6 +42,7 @@ import BankInfo from "@/pages/admin/BankInfo"
 import SuperAdminBranches from "@/pages/admin/SuperAdminBranches"
 import BranchMap from "@/pages/public/BranchMap"
 import StaffExtensions from "@/pages/admin/StaffExtensions"
+import OwnerTransactions from "@/pages/admin/OwnerTransactions"
 
 function App() {
   useIdleLogout()
@@ -105,6 +106,7 @@ function App() {
   <Route path="/admin/reports" element={<OwnerReports />} />
   <Route path="/admin/audit" element={<OwnerAuditLog />} />
   <Route path="/admin/bank-info" element={<BankInfo />} />
+  <Route path="/admin/transactions" element={<OwnerTransactions />} />
 </Route>
         </Route>
       </Route>

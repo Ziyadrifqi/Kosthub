@@ -135,12 +135,12 @@ type createDirectBookingRequest struct {
 	CheckIn        string `json:"check_in" binding:"required"`
 	DurationMonths int    `json:"duration_months" binding:"required,gt=0"`
 
-	// customer bisa yang sudah ada (cari by email) atau baru (isi data lengkap)
 	CustomerEmail string `json:"customer_email" binding:"required,email"`
 	CustomerName  string `json:"customer_name"`
 	CustomerPhone string `json:"customer_phone"`
 
-	PaymentNote string `json:"payment_note"`
+	PaymentMethod string `json:"payment_method" binding:"required,oneof=cash manual_transfer"`
+	PaymentNote   string `json:"payment_note"`
 }
 
 // POST /api/staff/bookings/direct — untuk booking walk-in
@@ -168,7 +168,9 @@ func (h *BookingHandler) CreateDirectBooking(c *gin.Context) {
 
 	booking, err := h.bookingService.CreateDirectBooking(service.CreateDirectBookingInput{
 		UserID: customerID, RoomID: req.RoomID, CheckIn: checkIn,
-		DurationMonths: req.DurationMonths, CreatedByStaff: staffID, PaymentNote: req.PaymentNote,
+		DurationMonths: req.DurationMonths, CreatedByStaff: staffID,
+		PaymentMethod: req.PaymentMethod,
+		PaymentNote:   req.PaymentNote,
 	})
 	if err != nil {
 		if err == repository.ErrRoomNotAvailable {

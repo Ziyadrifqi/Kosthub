@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"time"
 
 	"github.com/Ziyadrifqi/kosthub/backend/internal/models"
 	"github.com/google/uuid"
@@ -192,4 +193,99 @@ func (r *PaymentRepository) FindAllAuditLogs(filter AuditLogFilter) ([]models.Pa
 	}
 
 	return logs, total, nil
+}
+
+type TransactionFilter struct {
+	Method   string // manual_transfer, cash, atau kosong = semua
+	BranchID *uint
+	Page     int
+	Limit    int
+}
+
+type TransactionListResult struct {
+	Payments []models.Payment
+	Total    int64
+	SumTotal float64
+}
+
+// FindVerifiedTransactions — daftar SEMUA payment terverifikasi (transfer maupun cash)
+// buat rekonsiliasi owner: siapa yang verifikasi, cabang mana, metode apa.
+func (r *PaymentRepository) FindVerifiedTransactions(filter TransactionFilter) (*TransactionListResult, error) {
+	var payments []models.Payment
+	var total int64
+	var sumTotal float64
+
+	query := r.db.Model(&models.Payment{}).
+		Preload("Booking").
+		Preload("Booking.User").
+		Preload("Booking.Room").
+		Preload("Booking.Room.Branch").
+		Where("payments.status = ?", "verified")
+
+	if filter.Method != "" {
+		query = query.Where("payments.method = ?", filter.Method)
+	}
+
+	if filter.BranchID != nil {
+		query = query.Joins("JOIN bookings ON bookings.id = payments.booking_id").
+			Joins("JOIN rooms ON rooms.id = bookings.room_id").
+			Where("rooms.branch_id = ?", *filter.BranchID)
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, err
+	}
+
+	sumQuery := query.Session(&gorm.Session{})
+	sumQuery.Select("COALESCE(SUM(payments.amount), 0)").Scan(&sumTotal)
+
+	page := filter.Page
+	if page < 1 {
+		page = 1
+	}
+	limit := filter.Limit
+	if limit < 1 || limit > 100 {
+		limit = 20
+	}
+	offset := (page - 1) * limit
+
+	if err := query.Order("payments.updated_at desc").Limit(limit).Offset(offset).Find(&payments).Error; err != nil {
+		return nil, err
+	}
+
+	return &TransactionListResult{Payments: payments, Total: total, SumTotal: sumTotal}, nil
+}
+
+type ExportFilter struct {
+	Method    string
+	BranchID  *uint
+	StartDate time.Time
+	EndDate   time.Time
+}
+
+// FindForExport — TANPA pagination, ambil semua data dalam rentang tanggal
+// buat di-export ke Excel. Beda dari FindVerifiedTransactions yang dipaginasi untuk tampilan layar.
+func (r *PaymentRepository) FindForExport(filter ExportFilter) ([]models.Payment, error) {
+	var payments []models.Payment
+
+	query := r.db.Model(&models.Payment{}).
+		Preload("Booking").
+		Preload("Booking.User").
+		Preload("Booking.Room").
+		Preload("Booking.Room.Branch").
+		Where("payments.status = ?", "verified").
+		Where("payments.updated_at >= ? AND payments.updated_at < ?", filter.StartDate, filter.EndDate.AddDate(0, 0, 1))
+
+	if filter.Method != "" {
+		query = query.Where("payments.method = ?", filter.Method)
+	}
+
+	if filter.BranchID != nil {
+		query = query.Joins("JOIN bookings ON bookings.id = payments.booking_id").
+			Joins("JOIN rooms ON rooms.id = bookings.room_id").
+			Where("rooms.branch_id = ?", *filter.BranchID)
+	}
+
+	err := query.Order("payments.updated_at asc").Find(&payments).Error
+	return payments, err
 }

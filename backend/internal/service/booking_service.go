@@ -144,6 +144,7 @@ type CreateDirectBookingInput struct {
 	CheckIn        time.Time
 	DurationMonths int
 	CreatedByStaff uuid.UUID
+	PaymentMethod  string
 	PaymentNote    string
 }
 
@@ -153,15 +154,17 @@ func (s *BookingService) CreateDirectBooking(input CreateDirectBookingInput) (*m
 		return nil, err
 	}
 
-	totalPrice := room.Price * float64(input.DurationMonths)
+	pricePerMonth := room.PriceForDuration(input.DurationMonths)
+	totalPrice := pricePerMonth * float64(input.DurationMonths)
 
 	return s.bookingRepo.CreateDirectBookingTx(repository.DirectBookingInput{
 		UserID: input.UserID, RoomID: input.RoomID, CheckIn: input.CheckIn,
 		DurationMonths: input.DurationMonths, TotalPrice: totalPrice,
-		CreatedByStaff: input.CreatedByStaff, PaymentNote: input.PaymentNote,
+		CreatedByStaff: input.CreatedByStaff,
+		PaymentMethod:  input.PaymentMethod,
+		PaymentNote:    input.PaymentNote,
 	})
 }
-
 func (s *BookingService) GetUpcomingCheckIns(branchID *uint) ([]models.Booking, error) {
 	return s.bookingRepo.FindUpcomingCheckIns(branchID)
 }

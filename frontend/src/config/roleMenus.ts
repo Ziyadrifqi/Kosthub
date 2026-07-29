@@ -16,6 +16,7 @@ import {
     Landmark,
     MapPinned,
     CalendarPlus,
+    Wallet as WalletIcon,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -46,6 +47,7 @@ owner: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },
   { label: "Info Rekening", to: "/admin/bank-info", icon: Landmark },
   { label: "Laporan Revenue", to: "/admin/reports", icon: BarChart3 },
+  { label: "Riwayat Transaksi", to: "/admin/transactions", icon: WalletIcon },
   { label: "Audit Log", to: "/admin/audit", icon: FileClock },
 ],
 super_admin: [

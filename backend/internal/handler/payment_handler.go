@@ -142,3 +142,27 @@ func (h *PaymentHandler) GetAllAuditLogs(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+// GET /api/owner/transactions?method=&branch_id=&page=&limit=
+func (h *PaymentHandler) GetTransactions(c *gin.Context) {
+	method := c.Query("method")
+	page, _ := strconv.Atoi(c.Query("page"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+
+	var branchID *uint
+	if branchIDStr := c.Query("branch_id"); branchIDStr != "" {
+		b, err := strconv.Atoi(branchIDStr)
+		if err == nil {
+			bb := uint(b)
+			branchID = &bb
+		}
+	}
+
+	result, err := h.paymentService.GetTransactions(method, branchID, page, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to fetch transactions"})
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}

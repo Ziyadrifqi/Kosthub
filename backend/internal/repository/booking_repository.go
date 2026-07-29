@@ -203,12 +203,10 @@ type DirectBookingInput struct {
 	DurationMonths int
 	TotalPrice     float64
 	CreatedByStaff uuid.UUID
+	PaymentMethod  string // "cash" atau "manual_transfer"
 	PaymentNote    string
 }
 
-// CreateDirectBookingTx untuk booking walk-in: booking LANGSUNG confirmed,
-// payment LANGSUNG verified (cash), tetap tercatat di audit log siapa yang input —
-// supaya tetap ada jejak, bukan "uang masuk tanpa jejak".
 func (r *BookingRepository) CreateDirectBookingTx(input DirectBookingInput) (*models.Booking, error) {
 	var booking models.Booking
 
@@ -227,7 +225,7 @@ func (r *BookingRepository) CreateDirectBookingTx(input DirectBookingInput) (*mo
 			CheckIn:        input.CheckIn,
 			DurationMonths: input.DurationMonths,
 			TotalPrice:     input.TotalPrice,
-			Status:         "confirmed", // langsung confirmed, tidak lewat pending
+			Status:         "confirmed",
 		}
 		if err := tx.Create(&booking).Error; err != nil {
 			return err
@@ -237,9 +235,14 @@ func (r *BookingRepository) CreateDirectBookingTx(input DirectBookingInput) (*mo
 			return err
 		}
 
+		method := input.PaymentMethod
+		if method != "cash" && method != "manual_transfer" {
+			method = "cash" // fallback aman kalau ada nilai aneh
+		}
+
 		payment := models.Payment{
 			BookingID: booking.ID,
-			Method:    "cash",
+			Method:    method,
 			Amount:    input.TotalPrice,
 			Status:    "verified",
 		}
@@ -247,7 +250,7 @@ func (r *BookingRepository) CreateDirectBookingTx(input DirectBookingInput) (*mo
 			return err
 		}
 
-		note := "Booking langsung di lokasi (walk-in), pembayaran tunai."
+		note := "Booking langsung di lokasi, dikonfirmasi oleh staff."
 		if input.PaymentNote != "" {
 			note = input.PaymentNote
 		}

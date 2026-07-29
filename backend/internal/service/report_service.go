@@ -11,10 +11,10 @@ func NewReportService(db *gorm.DB) *ReportService {
 }
 
 type ReportSummary struct {
-	TotalRevenue float64 `json:"total_revenue"`
+	TotalRevenue         float64 `json:"total_revenue"`
+	TotalRevenueTransfer float64 `json:"total_revenue_transfer"`
+	TotalRevenueCash     float64 `json:"total_revenue_cash"`
 
-	// breakdown booking per status — supaya owner tahu KONDISI bisnisnya,
-	// bukan cuma angka gabungan yang membingungkan
 	TotalBookings     int64 `json:"total_bookings"`
 	PendingBookings   int64 `json:"pending_bookings"`
 	ConfirmedBookings int64 `json:"confirmed_bookings"`
@@ -31,6 +31,12 @@ func (s *ReportService) GetSummary() (*ReportSummary, error) {
 
 	s.db.Table("payments").Where("status = ?", "verified").
 		Select("COALESCE(SUM(amount), 0)").Scan(&summary.TotalRevenue)
+
+	s.db.Table("payments").Where("status = ? AND method = ?", "verified", "manual_transfer").
+		Select("COALESCE(SUM(amount), 0)").Scan(&summary.TotalRevenueTransfer)
+
+	s.db.Table("payments").Where("status = ? AND method = ?", "verified", "cash").
+		Select("COALESCE(SUM(amount), 0)").Scan(&summary.TotalRevenueCash)
 
 	s.db.Table("bookings").Count(&summary.TotalBookings)
 	s.db.Table("bookings").Where("status = ?", "pending").Count(&summary.PendingBookings)

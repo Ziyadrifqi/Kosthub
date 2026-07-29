@@ -29,6 +29,7 @@ func Setup(
 	bankAccountHandler *handler.BankAccountHandler,
 	branchHandler *handler.BranchHandler,
 	extensionHandler *handler.ExtensionHandler,
+	exportHandler *handler.ExportHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -162,6 +163,8 @@ func Setup(
 				owner.PATCH("/bank-accounts/:id", bankAccountHandler.Update)
 				owner.PATCH("/bank-accounts/:id/toggle", bankAccountHandler.ToggleActive)
 				owner.DELETE("/bank-accounts/:id", bankAccountHandler.Delete)
+				owner.GET("/transactions", paymentHandler.GetTransactions)
+				owner.GET("/transactions/export", exportHandler.ExportTransactions)
 			}
 
 			// ===== SUPER_ADMIN ONLY — user, gedung, tipe kamar =====

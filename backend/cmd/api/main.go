@@ -109,6 +109,10 @@ func main() {
 	extensionRepo := repository.NewExtensionRepository(db)
 	extensionService := service.NewExtensionService(extensionRepo, bookingRepo, roomRepo, notifService)
 	extensionHandler := handler.NewExtensionHandler(extensionService)
+
+	exportService := service.NewExportService(paymentRepo)
+	exportHandler := handler.NewExportHandler(exportService)
+
 	// ===== Router =====
 	r := router.Setup(
 		cfg,
@@ -131,6 +135,7 @@ func main() {
 		bankAccountHandler,
 		branchHandler,
 		extensionHandler,
+		exportHandler,
 	)
 
 	// ===== Background Worker =====
