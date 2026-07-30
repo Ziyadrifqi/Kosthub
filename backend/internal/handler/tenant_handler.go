@@ -124,3 +124,46 @@ func (h *TenantHandler) UpdateProfile(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "profil penyewa diperbarui"})
 }
+
+// GET /api/profile/tenant — customer lihat data tambahan miliknya sendiri
+func (h *TenantHandler) GetMyProfile(c *gin.Context) {
+	userID, _ := uuid.Parse(c.MustGet("user_id").(string))
+
+	profile, err := h.service.GetMyProfile(userID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"profile": nil}) // wajar kalau belum pernah isi
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"profile": profile})
+}
+
+type updateMyProfileRequest struct {
+	IDNumber              string `json:"id_number"`
+	Address               string `json:"address"`
+	EmergencyContactName  string `json:"emergency_contact_name"`
+	EmergencyContactPhone string `json:"emergency_contact_phone"`
+	Occupation            string `json:"occupation"`
+}
+
+// PUT /api/profile/tenant — customer isi/update data tambahan miliknya sendiri
+// TIDAK bisa mengubah staff_note — itu murni field internal staff.
+func (h *TenantHandler) UpdateMyProfile(c *gin.Context) {
+	userID, _ := uuid.Parse(c.MustGet("user_id").(string))
+
+	var req updateMyProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.service.UpdateOwnProfile(userID, service.UpdateProfileInput{
+		IDNumber: req.IDNumber, Address: req.Address,
+		EmergencyContactName: req.EmergencyContactName, EmergencyContactPhone: req.EmergencyContactPhone,
+		Occupation: req.Occupation,
+	}); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update profile"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "data berhasil disimpan"})
+}

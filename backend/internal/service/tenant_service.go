@@ -98,3 +98,30 @@ func strPtr(s string) *string {
 	}
 	return &s
 }
+
+func (s *TenantService) GetMyProfile(userID uuid.UUID) (*models.TenantProfile, error) {
+	return s.repo.FindProfile(userID)
+}
+
+// UpdateOwnProfile — versi customer, TIDAK menyentuh staff_note sama sekali
+// (kalau sudah ada staff_note dari staff, tetap dipertahankan, bukan ditimpa kosong).
+func (s *TenantService) UpdateOwnProfile(userID uuid.UUID, input UpdateProfileInput) error {
+	existing, _ := s.repo.FindProfile(userID)
+
+	profile := &models.TenantProfile{
+		UserID:                userID,
+		IDNumber:              strPtr(input.IDNumber),
+		Address:               strPtr(input.Address),
+		EmergencyContactName:  strPtr(input.EmergencyContactName),
+		EmergencyContactPhone: strPtr(input.EmergencyContactPhone),
+		Occupation:            strPtr(input.Occupation),
+	}
+
+	// pertahankan staff_note & updated_by yang sudah ada, jangan ditimpa customer
+	if existing != nil {
+		profile.StaffNote = existing.StaffNote
+		profile.UpdatedBy = existing.UpdatedBy
+	}
+
+	return s.repo.UpsertProfile(profile)
+}

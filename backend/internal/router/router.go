@@ -90,6 +90,8 @@ func Setup(
 
 			protected.PATCH("/profile", authHandler.UpdateProfile)
 			protected.PATCH("/profile/password", authHandler.ChangePassword)
+			protected.GET("/profile/tenant", tenantHandler.GetMyProfile)
+			protected.PUT("/profile/tenant", tenantHandler.UpdateMyProfile)
 
 			bookings := protected.Group("/bookings")
 			{
