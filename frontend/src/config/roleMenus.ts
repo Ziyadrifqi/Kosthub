@@ -18,6 +18,7 @@ import {
     CalendarPlus,
     Wallet as WalletIcon,
     MessageSquareQuote,
+    Users as UsersIcon,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -43,6 +44,7 @@ staff: [
   { label: "Verifikasi Payment", to: "/admin/payments", icon: Wallet },
   { label: "Pembatalan", to: "/admin/cancellations", icon: UserX },
   { label: "Perpanjangan Sewa", to: "/admin/extensions", icon: CalendarPlus },
+  { label: "Kelola Data Pengguna", to: "/admin/tenants", icon: UsersIcon },
 ],
 owner: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },

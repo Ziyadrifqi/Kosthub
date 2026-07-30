@@ -30,6 +30,7 @@ func Setup(
 	branchHandler *handler.BranchHandler,
 	extensionHandler *handler.ExtensionHandler,
 	exportHandler *handler.ExportHandler,
+	tenantHandler *handler.TenantHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -150,6 +151,10 @@ func Setup(
 
 				staff.GET("/extension-requests", extensionHandler.GetWaiting)
 				staff.PATCH("/extension-requests/:id", extensionHandler.Process)
+
+				staff.GET("/tenants", tenantHandler.List)
+				staff.GET("/tenants/:userId", tenantHandler.GetDetail)
+				staff.PUT("/tenants/:userId/profile", tenantHandler.UpdateProfile)
 			}
 
 			// ===== OWNER & SUPER_ADMIN — pengawasan =====

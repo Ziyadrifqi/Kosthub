@@ -71,7 +71,7 @@ func (h *AuthHandler) UpdateProfile(c *gin.Context) {
 
 	userID, _ := uuid.Parse(c.MustGet("user_id").(string))
 
-	user, err := h.authService.UpdateProfile(service.UpdateProfileInput{
+	user, err := h.authService.UpdateProfile(service.UpdateUserProfileInput{
 		UserID: userID,
 		Name:   req.Name,
 		Phone:  req.Phone,

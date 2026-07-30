@@ -133,13 +133,13 @@ func roleNameOrDefault(user *models.User) string {
 
 // ===== PROFILE =====
 
-type UpdateProfileInput struct {
+type UpdateUserProfileInput struct {
 	UserID uuid.UUID
 	Name   string
 	Phone  string
 }
 
-func (s *AuthService) UpdateProfile(input UpdateProfileInput) (*models.User, error) {
+func (s *AuthService) UpdateProfile(input UpdateUserProfileInput) (*models.User, error) {
 	user, err := s.userRepo.FindByID(input.UserID)
 	if err != nil {
 		return nil, err

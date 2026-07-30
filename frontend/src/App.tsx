@@ -44,6 +44,7 @@ import BranchMap from "@/pages/public/BranchMap"
 import StaffExtensions from "@/pages/admin/StaffExtensions"
 import OwnerTransactions from "@/pages/admin/OwnerTransactions"
 import SuperAdminTestimonials from "@/pages/admin/SuperAdminTestimonials"
+import StaffTenants from "@/pages/admin/StaffTenants"
 
 function App() {
   useIdleLogout()
@@ -93,6 +94,7 @@ function App() {
 <Route path="/admin/direct-booking" element={<DirectBooking />} />
 <Route path="/admin/checkin" element={<CheckInSchedule />} />
 <Route path="/admin/extensions" element={<StaffExtensions />} />
+<Route path="/admin/tenants" element={<StaffTenants />} />
 </Route>
 
 <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
