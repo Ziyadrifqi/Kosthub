@@ -156,22 +156,31 @@ export default function Profile() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">Kontak Darurat (Nama)</label>
+            <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">
+              Kontak Darurat — Nama
+            </label>
             <input
               value={tenantForm.emergency_contact_name}
               onChange={(e) => setTenantForm({ ...tenantForm, emergency_contact_name: e.target.value })}
+              placeholder="Bukan nomor kamu sendiri"
               className="w-full border border-border rounded-sm px-4 py-2.5 text-sm bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
             />
           </div>
           <div>
-            <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">Kontak Darurat (No. HP)</label>
+            <label className="block font-mono text-xs uppercase tracking-wide text-text-secondary mb-1.5">
+              Kontak Darurat — No. HP
+            </label>
             <input
               value={tenantForm.emergency_contact_phone}
               onChange={(e) => setTenantForm({ ...tenantForm, emergency_contact_phone: e.target.value })}
+              placeholder="Keluarga/kerabat terdekat"
               className="w-full border border-border rounded-sm px-4 py-2.5 text-sm bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
             />
           </div>
         </div>
+        <p className="text-xs text-text-secondary -mt-2">
+          Ini nomor orang lain yang bisa dihubungi kalau terjadi keadaan darurat — bukan nomor kamu sendiri (nomor pribadimu sudah tercatat di bagian atas).
+        </p>
         {updateTenantProfile.isSuccess && (
           <p className="flex items-center gap-1.5 text-primary text-sm">
             <CheckCircle2 size={15} /> Data tersimpan.

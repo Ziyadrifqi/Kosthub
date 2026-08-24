@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Search, User, X, CheckCircle2 } from "lucide-react"
 import { useTenants, useTenantDetail, useUpdateTenantProfile, type TenantUser } from "@/hooks/useTenants"
 import { usePageTitle } from "@/hooks/usePageTitle"
@@ -18,6 +18,10 @@ export default function StaffTenants() {
     const timer = setTimeout(() => setSearch(searchInput), 400)
     return () => clearTimeout(timer)
   }, [searchInput])
+
+  useEffect(() => {
+    setPage(1)
+  }, [search])
 
   const { data } = useTenants(search, page)
   const [selectedTenant, setSelectedTenant] = useState<TenantUser | null>(null)
@@ -72,6 +76,28 @@ export default function StaffTenants() {
         </table>
       </div>
 
+      {data && (data.total > 20 || page > 1) && (
+        <div className="flex items-center justify-between mt-4">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="text-xs font-heading font-medium text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            ← Sebelumnya
+          </button>
+          <span className="text-xs text-text-secondary">
+            Halaman {page} dari {Math.max(1, Math.ceil(data.total / 20))}
+          </span>
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page * 20 >= data.total}
+            className="text-xs font-heading font-medium text-primary hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Selanjutnya →
+          </button>
+        </div>
+      )}
+
       {selectedTenant && (
         <TenantDetailModal tenant={selectedTenant} onClose={() => setSelectedTenant(null)} />
       )}
@@ -88,6 +114,7 @@ function TenantDetailModal({ tenant, onClose }: { tenant: TenantUser; onClose: (
     emergency_contact_phone: "", occupation: "", staff_note: "",
   })
   const [saved, setSaved] = useState(false)
+  const [showCancelled, setShowCancelled] = useState(false)
 
   useEffect(() => {
     if (data?.profile) {
@@ -101,6 +128,16 @@ function TenantDetailModal({ tenant, onClose }: { tenant: TenantUser; onClose: (
       })
     }
   }, [data])
+
+  const { activeHistory, cancelledCount } = useMemo(() => {
+    const history = data?.history ?? []
+    return {
+      activeHistory: history.filter((h) => h.status !== "cancelled"),
+      cancelledCount: history.filter((h) => h.status === "cancelled").length,
+    }
+  }, [data])
+
+  const displayedHistory = showCancelled ? data?.history ?? [] : activeHistory
 
   const handleSave = () => {
     updateProfile.mutate(
@@ -147,10 +184,29 @@ function TenantDetailModal({ tenant, onClose }: { tenant: TenantUser; onClose: (
         </div>
 
         <div className="border-t border-border pt-4">
-          <p className="text-sm font-heading font-semibold text-text mb-3">Riwayat Booking di Cabang Ini</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-heading font-semibold text-text">Riwayat Booking di Cabang Ini</p>
+            <p className="text-xs text-text-secondary">
+              {activeHistory.length} aktif/selesai
+              {cancelledCount > 0 && ` · ${cancelledCount} dibatalkan`}
+            </p>
+          </div>
+          {cancelledCount > 0 && (
+            <button
+              onClick={() => setShowCancelled(!showCancelled)}
+              className="text-xs text-primary hover:underline mb-3"
+            >
+              {showCancelled ? "Sembunyikan yang dibatalkan" : `Tampilkan ${cancelledCount} yang dibatalkan`}
+            </button>
+          )}
           <div className="space-y-2">
-            {data?.history.map((h) => (
-              <div key={h.id} className="flex items-center justify-between text-sm bg-section rounded-lg px-4 py-2.5">
+            {displayedHistory.map((h) => (
+              <div
+                key={h.id}
+                className={`flex items-center justify-between text-sm rounded-lg px-4 py-2.5 ${
+                  h.status === "cancelled" ? "bg-section opacity-60" : "bg-section"
+                }`}
+              >
                 <div>
                   <p className="text-text">{h.room?.room_number} · {h.duration_months} bulan</p>
                   <p className="text-xs text-text-secondary">{new Date(h.check_in).toLocaleDateString("id-ID")}</p>
@@ -158,7 +214,7 @@ function TenantDetailModal({ tenant, onClose }: { tenant: TenantUser; onClose: (
                 <span className="text-xs text-text-secondary">{statusLabel[h.status] ?? h.status}</span>
               </div>
             ))}
-            {data?.history.length === 0 && (
+            {displayedHistory.length === 0 && (
               <p className="text-xs text-text-secondary">Belum ada riwayat booking.</p>
             )}
           </div>
