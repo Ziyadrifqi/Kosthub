@@ -31,6 +31,7 @@ func Setup(
 	extensionHandler *handler.ExtensionHandler,
 	exportHandler *handler.ExportHandler,
 	tenantHandler *handler.TenantHandler,
+	maintenanceHandler *handler.MaintenanceHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -122,6 +123,8 @@ func Setup(
 			protected.POST("/cancellation-requests", cancellationHandler.Create)
 			protected.POST("/extension-requests", extensionHandler.Create)
 			protected.POST("/extension-requests/:id/upload-proof", extensionHandler.UploadProof)
+			protected.POST("/maintenance-tickets", maintenanceHandler.Create)
+			protected.GET("/maintenance-tickets/my", maintenanceHandler.GetMy)
 
 			// ===== STAFF ONLY — operasional harian =====
 			staff := protected.Group("/staff")
@@ -157,6 +160,9 @@ func Setup(
 				staff.GET("/tenants", tenantHandler.List)
 				staff.GET("/tenants/:userId", tenantHandler.GetDetail)
 				staff.PUT("/tenants/:userId/profile", tenantHandler.UpdateProfile)
+
+				staff.GET("/maintenance-tickets", maintenanceHandler.GetByBranch)
+				staff.PATCH("/maintenance-tickets/:id", maintenanceHandler.UpdateStatus)
 			}
 
 			// ===== OWNER & SUPER_ADMIN — pengawasan =====

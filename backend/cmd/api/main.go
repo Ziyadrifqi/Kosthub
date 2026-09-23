@@ -117,6 +117,10 @@ func main() {
 	tenantService := service.NewTenantService(tenantRepo)
 	tenantHandler := handler.NewTenantHandler(tenantService)
 
+	maintenanceRepo := repository.NewMaintenanceRepository(db)
+	maintenanceService := service.NewMaintenanceService(maintenanceRepo, notifService)
+	maintenanceHandler := handler.NewMaintenanceHandler(maintenanceService)
+
 	// ===== Router =====
 	r := router.Setup(
 		cfg,
@@ -141,6 +145,7 @@ func main() {
 		extensionHandler,
 		exportHandler,
 		tenantHandler,
+		maintenanceHandler,
 	)
 
 	// ===== Background Worker =====

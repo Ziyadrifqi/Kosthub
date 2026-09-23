@@ -19,6 +19,7 @@ import {
     Wallet as WalletIcon,
     MessageSquareQuote,
     Users as UsersIcon,
+    Wrench,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -45,6 +46,7 @@ staff: [
   { label: "Pembatalan", to: "/admin/cancellations", icon: UserX },
   { label: "Perpanjangan Sewa", to: "/admin/extensions", icon: CalendarPlus },
   { label: "Kelola Data Pengguna", to: "/admin/tenants", icon: UsersIcon },
+  { label: "Laporan Kerusakan", to: "/admin/maintenance", icon: Wrench },
 ],
 owner: [
   { label: "Dashboard", to: "/admin", icon: LayoutDashboard },

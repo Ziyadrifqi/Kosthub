@@ -5,7 +5,7 @@ import { useAuthStore } from "@/store/authStore"
 import { NotificationBell } from "@/components/NotificationBell"
 import { ConfirmModal } from "@/components/ConfirmModal"
 import { useBranches } from "@/hooks/useBranches"
-
+import { useMyBookings } from "@/hooks/useBookings"
 
 const navLinks = [
   { label: "Cari Kamar", to: "/rooms" },
@@ -15,6 +15,8 @@ const navLinks = [
 
 export function Navbar() {
   const { user, logout } = useAuthStore()
+  const { data: bookingsData } = useMyBookings()
+const hasActiveTenancy = bookingsData?.bookings.some((b) => b.status === "confirmed") ?? false
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
@@ -43,6 +45,9 @@ export function Navbar() {
           {user && (
   <>
     <Link to="/my-bookings" className="hover:text-primary transition-colors">Booking Saya</Link>
+    {hasActiveTenancy && (
+      <Link to="/maintenance" className="hover:text-primary transition-colors">Lapor Kerusakan</Link>
+    )}
     <Link to="/favorites" className="hover:text-primary transition-colors">Favorit</Link>
     <Link to="/profile" className="hover:text-primary transition-colors">Profil</Link>
     {user.role && ["staff", "owner", "super_admin"].includes(user.role.name) && (
@@ -114,9 +119,12 @@ export function Navbar() {
           </div>
 
           <div className="pt-3 border-t border-border flex flex-col gap-2">
-           {user ? (
+          {user ? (
   <>
     <Link to="/my-bookings" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Booking Saya</Link>
+    {hasActiveTenancy && (
+      <Link to="/maintenance" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Lapor Kerusakan</Link>
+    )}
     <Link to="/favorites" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Favorit</Link>
     <Link to="/profile" onClick={() => setOpen(false)} className="font-heading font-medium text-sm text-ink py-1.5">Profil</Link>
     {user.role && ["staff", "owner", "super_admin"].includes(user.role.name) && (

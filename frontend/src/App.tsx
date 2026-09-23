@@ -45,6 +45,8 @@ import StaffExtensions from "@/pages/admin/StaffExtensions"
 import OwnerTransactions from "@/pages/admin/OwnerTransactions"
 import SuperAdminTestimonials from "@/pages/admin/SuperAdminTestimonials"
 import StaffTenants from "@/pages/admin/StaffTenants"
+import MaintenanceTickets from "@/pages/customer/MaintenanceTickets"
+import StaffMaintenance from "@/pages/admin/StaffMaintenance"
 
 function App() {
   useIdleLogout()
@@ -70,6 +72,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/map" element={<BranchMap />} />
+        <Route path="/maintenance" element={<MaintenanceTickets />} />
 
         <Route element={<ProtectedRoute />}>
           <Route path="/booking/:roomId" element={<Booking />} />
@@ -95,6 +98,7 @@ function App() {
 <Route path="/admin/checkin" element={<CheckInSchedule />} />
 <Route path="/admin/extensions" element={<StaffExtensions />} />
 <Route path="/admin/tenants" element={<StaffTenants />} />
+<Route path="/admin/maintenance" element={<StaffMaintenance />} />
 </Route>
 
 <Route element={<RoleRoute allowedRoles={["super_admin"]} />}>
