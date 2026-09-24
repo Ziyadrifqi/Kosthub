@@ -8,6 +8,7 @@ import { useAuthStore } from "@/store/authStore"
 import { useBranches } from "@/hooks/useBranches"
 import { RoomPhotoModal } from "@/components/admin/RoomPhotoModal"
 import { usePageTitle } from "@/hooks/usePageTitle"
+import { useFacilities, useSetRoomFacilities } from "@/hooks/useFacilities"
 
 
 interface EditingRoom {
@@ -30,9 +31,13 @@ export default function StaffRooms() {
   const myBranchId = user?.branch_id ?? undefined
 const { data: branches } = useBranches()
 const myBranch = branches?.find((b) => b.id === myBranchId)
+const { data: facilities } = useFacilities()
+const setRoomFacilities = useSetRoomFacilities()
+const [selectedFacilityIds, setSelectedFacilityIds] = useState<number[]>([])
 
   const queryClient = useQueryClient()
   const [showForm, setShowForm] = useState(false)
+
 
   const [form, setForm] = useState({
     branch_id: isSuperAdmin ? "" : String(myBranchId ?? ""),
@@ -79,25 +84,26 @@ const myBranch = branches?.find((b) => b.id === myBranchId)
   const [editingRoom, setEditingRoom] = useState<EditingRoom | null>(null)
   const [managingPhotosFor, setManagingPhotosFor] = useState<{ id: number; room_number: string } | null>(null)
 
-  const updateRoom = useMutation({
-    mutationFn: async () => {
-      if (!editingRoom) return
-      await api.patch(`/staff/rooms/${editingRoom.id}`, {
-        room_number: editingRoom.room_number,
-        price: Number(editingRoom.price),
-        status: editingRoom.status,
-        discount_type: editingRoom.discount_type || null,
-        discount_value: editingRoom.discount_value ? Number(editingRoom.discount_value) : null,
-        discount_start_date: editingRoom.discount_start_date || null,
-        discount_end_date: editingRoom.discount_end_date || null,
-        discount_min_months: editingRoom.discount_min_months ? Number(editingRoom.discount_min_months) : null,
-      })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["rooms"] })
-      setEditingRoom(null)
-    },
-  })
+ const updateRoom = useMutation({
+  mutationFn: async () => {
+    if (!editingRoom) return
+    await api.patch(`/staff/rooms/${editingRoom.id}`, {
+      room_number: editingRoom.room_number,
+      price: Number(editingRoom.price),
+      status: editingRoom.status,
+      discount_type: editingRoom.discount_type || null,
+      discount_value: editingRoom.discount_value ? Number(editingRoom.discount_value) : null,
+      discount_start_date: editingRoom.discount_start_date || null,
+      discount_end_date: editingRoom.discount_end_date || null,
+      discount_min_months: editingRoom.discount_min_months ? Number(editingRoom.discount_min_months) : null,
+    })
+    await setRoomFacilities.mutateAsync({ roomId: editingRoom.id, facilityIds: selectedFacilityIds })
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["rooms"] })
+    setEditingRoom(null)
+  },
+})
 
   const deleteRoom = useMutation({
     mutationFn: async (id: number) => {
@@ -119,19 +125,22 @@ const myBranch = branches?.find((b) => b.id === myBranchId)
     setConfirmDeleteRoom(null)
   }
 
-  const openEdit = (r: any) => {
-    setEditingRoom({
-      id: r.id,
-      room_number: r.room_number,
-      price: String(r.price),
-      status: r.status,
-      discount_type: r.discount_type ?? "",
-      discount_value: r.discount_value ? String(r.discount_value) : "",
-      discount_start_date: r.discount_start_date?.split("T")[0] ?? "",
-      discount_end_date: r.discount_end_date?.split("T")[0] ?? "",
-      discount_min_months: r.discount_min_months ? String(r.discount_min_months) : "",
-    })
-  }
+ const openEdit = (r: any) => {
+  setEditingRoom({
+    id: r.id, room_number: r.room_number, price: String(r.price), status: r.status,
+    discount_type: r.discount_type ?? "", discount_value: r.discount_value ? String(r.discount_value) : "",
+    discount_start_date: r.discount_start_date?.split("T")[0] ?? "",
+    discount_end_date: r.discount_end_date?.split("T")[0] ?? "",
+    discount_min_months: r.discount_min_months ? String(r.discount_min_months) : "",
+  })
+  setSelectedFacilityIds(r.facilities?.map((f: any) => f.id) ?? [])
+}
+
+const toggleFacility = (id: number) => {
+  setSelectedFacilityIds((prev) =>
+    prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+  )
+}
 
   return (
     <div className="p-8">
@@ -406,7 +415,22 @@ const myBranch = branches?.find((b) => b.id === myBranchId)
                 )}
               </div>
             </div>
-
+<div className="border-t border-border pt-3">
+  <p className="text-sm font-heading font-medium text-text mb-2">Fasilitas</p>
+  <div className="grid grid-cols-2 gap-2">
+    {facilities?.map((f) => (
+      <label key={f.id} className="flex items-center gap-2 text-sm text-text cursor-pointer">
+        <input
+          type="checkbox"
+          checked={selectedFacilityIds.includes(f.id)}
+          onChange={() => toggleFacility(f.id)}
+          className="rounded border-border"
+        />
+        {f.name}
+      </label>
+    ))}
+  </div>
+</div>
             <button
               onClick={() => updateRoom.mutate()}
               disabled={updateRoom.isPending}

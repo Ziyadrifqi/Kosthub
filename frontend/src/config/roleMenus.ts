@@ -20,6 +20,7 @@ import {
     MessageSquareQuote,
     Users as UsersIcon,
     Wrench,
+    Sparkles,
 } from "lucide-react"
 
 export interface MenuItem {
@@ -63,6 +64,7 @@ super_admin: [
   { label: "Kelola Konten", to: "/admin/content", icon: FileText },
   { label: "Kelola Testimonial", to: "/admin/testimonials", icon: MessageSquareQuote },
   { label: "Kelola User", to: "/admin/users", icon: Users },
+   { label: "Kelola Fasilitas", to: "/admin/facilities", icon: Sparkles },
 ],
 }
 

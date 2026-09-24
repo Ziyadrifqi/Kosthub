@@ -32,6 +32,7 @@ func Setup(
 	exportHandler *handler.ExportHandler,
 	tenantHandler *handler.TenantHandler,
 	maintenanceHandler *handler.MaintenanceHandler,
+	facilityHandler *handler.FacilityHandler,
 ) *gin.Engine {
 	r := gin.Default()
 
@@ -75,6 +76,7 @@ func Setup(
 		api.GET("/room-types", roomTypeHandler.List)
 		api.GET("/branches", branchHandler.List)
 		api.GET("/reviews/featured", reviewHandler.GetFeatured)
+		api.GET("/facilities", facilityHandler.List)
 
 		// ===== WAJIB LOGIN =====
 		protected := api.Group("/")
@@ -163,6 +165,8 @@ func Setup(
 
 				staff.GET("/maintenance-tickets", maintenanceHandler.GetByBranch)
 				staff.PATCH("/maintenance-tickets/:id", maintenanceHandler.UpdateStatus)
+
+				staff.PUT("/rooms/:id/facilities", facilityHandler.SetRoomFacilities)
 			}
 
 			// ===== OWNER & SUPER_ADMIN — pengawasan =====
@@ -207,6 +211,9 @@ func Setup(
 
 				superAdmin.GET("/reviews", reviewHandler.GetAllForAdmin)
 				superAdmin.PATCH("/reviews/:id/featured", reviewHandler.ToggleFeatured)
+
+				superAdmin.POST("/facilities", facilityHandler.Create)
+				superAdmin.DELETE("/facilities/:id", facilityHandler.Delete)
 			}
 		}
 	}
